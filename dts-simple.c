@@ -1,7 +1,34 @@
-#include <cairo.h>
 #include <gtk/gtk.h>
-#include <glib.h>
 #include <glib/gprintf.h>
+
+GtkWidget *hbox1;
+
+typedef struct
+{
+  const gchar 		*time;
+  const gchar		*dest;
+  const gchar		*busno;
+  const gchar		*standard;
+  const gchar		*platform;
+  const gchar		*note;
+  const gboolean	out;
+  const gchar		*objname;
+}
+Table;
+
+static Table data[] =
+{
+  { "17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
+  { "17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
+  { "18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "รถติดขาเข้า", FALSE},
+  { "18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
+  { "18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
+  { "19:00", "น่าน", "910-3", "ม.1ข", "1", "", FALSE},
+  { "19:15", "ทุ่งช้าง", "47-7", "ม.1ก", "ประตู 3", "", FALSE},
+  { "19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
+  { "19:45", "เชียงใหม่", "18-52", "ม.1ข", "4", "", FALSE},
+};
+
 
 GdkPixbuf *load_pixbuf_from_file (const char *filename)
 {
@@ -46,16 +73,20 @@ update_time(GtkWidget *label)
 }
 
 void
-set_label(GtkWidget *hbox, GtkWidget *lbl, gint n_char, gchar *text, gint size, gchar *color, gboolean BG_SET)
+set_label(GtkWidget *hbox, GtkWidget *lbl, gint n_char, const gchar *text, gint size, gchar *color, gboolean BG_SET, gboolean BOLD)
 {
   PangoFontDescription *dfLabel;
   GdkColor lblColor;
   GdkColor lblBgColor;
 
   gdk_color_parse(color, &lblColor);
-  gdk_color_parse("black", &lblBgColor);
+  gdk_color_parse("#101010", &lblBgColor);
   
-  dfLabel = pango_font_description_from_string("Sawasdee");
+  if (BOLD)
+    dfLabel = pango_font_description_from_string("Norasi Bold");
+  else
+    dfLabel = pango_font_description_from_string("Norasi Regular");
+
   pango_font_description_set_size(dfLabel, size*PANGO_SCALE);
 
   lbl = gtk_label_new(text);
@@ -66,9 +97,9 @@ set_label(GtkWidget *hbox, GtkWidget *lbl, gint n_char, gchar *text, gint size, 
 
   GtkWidget *eventbox;
   eventbox = gtk_event_box_new();
-  if (BG_SET)
+  if (BG_SET){
     gtk_widget_modify_bg(eventbox, GTK_STATE_NORMAL, &lblBgColor);
-  else
+  }else
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(eventbox), FALSE);
 
   gtk_misc_set_alignment(GTK_MISC(lbl), 0, 0.5);
@@ -78,6 +109,10 @@ set_label(GtkWidget *hbox, GtkWidget *lbl, gint n_char, gchar *text, gint size, 
   gtk_box_pack_start(GTK_BOX(hbox), eventbox, FALSE, FALSE, 10);
 }
 
+void remove_first(GtkWidget *button, gpointer user_data){
+  gtk_container_remove(GTK_CONTAINER(user_data), hbox1);
+}
+
 int main(int argc, char *argv[]){
 
   GtkWidget *win=NULL;
@@ -85,7 +120,7 @@ int main(int argc, char *argv[]){
   GtkWidget *vbox;
   GtkWidget *hbox;
   GtkWidget *lblDateTime;
-  GtkWidget *lblName;
+  GtkWidget *lblName = NULL;
   GtkWidget *lblHeader = NULL;
   PangoFontDescription *dfDateTime;
   PangoFontDescription *dfName;
@@ -94,11 +129,11 @@ int main(int argc, char *argv[]){
   GdkPixmap *background = NULL;
   GtkStyle *style = NULL;
   
-  GdkColor white;		/* color */
+  GdkColor NameColor;
 
   gtk_init(&argc, &argv);
 
-  image = load_pixbuf_from_file ("dts_bg.jpg");
+  image = load_pixbuf_from_file ("1397755.jpg");
   gdk_pixbuf_render_pixmap_and_mask (image, &background, NULL, 0);
   style = gtk_style_new ();
   style->bg_pixmap [0] = background;
@@ -113,10 +148,6 @@ int main(int argc, char *argv[]){
  
   gtk_window_fullscreen(GTK_WINDOW(win));
 
-  //GdkCursor *Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
-  //GdkWindow *window = gtk_widget_get_window(win);
-  //gdk_window_set_cursor(window, Cursor);
-
   icon = create_pixbuf("Digital-Signage.png");
   gtk_window_set_icon(GTK_WINDOW(win), icon);
 
@@ -124,21 +155,23 @@ int main(int argc, char *argv[]){
   gtk_container_add(GTK_CONTAINER(win), vbox);
   
   hbox = gtk_hbox_new(FALSE, 1);
-  //gtk_container_add(GTK_CONTAINER(vbox), hbox);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   
-  lblName = gtk_label_new("ตารางเวลารถออก");
+  lblName = gtk_label_new("::ตารางเวลารถออก");
   lblDateTime = gtk_label_new("");
-  
-  dfDateTime = pango_font_description_from_string("Sawasdee");
+ 
+  dfDateTime = pango_font_description_from_string("Laksaman");
   pango_font_description_set_size(dfDateTime, 20*PANGO_SCALE);
   
-  dfName = pango_font_description_from_string("Sawasdee");
-  pango_font_description_set_size(dfName, 40*PANGO_SCALE);
+  dfName = pango_font_description_from_string("Laksaman");
+  pango_font_description_set_size(dfName, 26*PANGO_SCALE);
+  
+  pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_weight(dfDateTime, PANGO_WEIGHT_BOLD);
 
-  gdk_color_parse("green", &white);
-  gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &white);
-  gtk_widget_modify_fg(GTK_WIDGET(lblName), GTK_STATE_NORMAL, &white);
+  gdk_color_parse("#006000", &NameColor);
+  gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &NameColor);
+  gtk_widget_modify_fg(GTK_WIDGET(lblName), GTK_STATE_NORMAL, &NameColor);
 
   gtk_widget_modify_font(lblDateTime, dfDateTime);
   gtk_widget_modify_font(lblName, dfName);
@@ -147,60 +180,28 @@ int main(int argc, char *argv[]){
   
   //header
   hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE,10);
-  set_label(hbox, lblHeader, 5, "เวลา", 30, "light green", TRUE);
-  set_label(hbox, lblHeader, 10, "ปลายทาง", 30, "light green", TRUE);
-  set_label(hbox, lblHeader, 12, "เลขรถ", 30, "light green", TRUE);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE,0);
+  set_label(hbox, lblHeader, 5, "เวลา", 30, "#006000", TRUE, TRUE);
+  set_label(hbox, lblHeader, 10, "ปลายทาง", 30, "#006000", TRUE, TRUE);
+  set_label(hbox, lblHeader, 7, "เลขรถ", 30, "#006000", TRUE, TRUE);
+  set_label(hbox, lblHeader, 8, "มาตรฐาน", 30, "#006000", TRUE, TRUE);
+  set_label(hbox, lblHeader, 7, "ชานชาลา", 30, "#006000", TRUE, TRUE);
+  set_label(hbox, lblHeader, 15, "หมายเหตุ", 30, "#006000", TRUE, TRUE);
   //
 
-  GtkWidget *lbl=NULL;
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "17:00", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "เชียงใหม่", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "18-102 (ม.1ข)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "18:00", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "แม่สาย", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "957-1 (ม.1ก)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "19:00", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "เชียงราย", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "909-7 (ม.1พ)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "19:30", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "แม่ฮ่องสอน", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "961-2 (ม.4ค)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "19:45", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "เชียงของ", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "962-5 (ม.1ข)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "19:45", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "ทุ่งช้าง", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "47-3 (ม.1ก)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5,  "20:00", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "ขอนแก่น", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "20-1 (ม.4ก)", 30, "light green", FALSE); 
-
-  hbox = gtk_hbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  set_label(hbox, lbl, 5, "20:05", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 10, "เขียงแสน", 30, "light green", FALSE); 
-  set_label(hbox, lbl, 12, "3-2 (ม.1ก)", 30, "light green", FALSE); 
+  int i;
+  /* add data to the list store */
+  for (i = 0; i < G_N_ELEMENTS (data); i++){
+    GtkWidget *lbl=NULL;
+    hbox = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+    set_label(hbox, lbl, 5, data[i].time, 30, "#00ff00", FALSE, FALSE); 
+    set_label(hbox, lbl, 10, data[i].dest, 30, "#00ff00", FALSE, FALSE); 
+    set_label(hbox, lbl, 7, data[i].busno, 30, "#00ff00", FALSE, FALSE); 
+    set_label(hbox, lbl, 8, data[i].standard, 30, "#00ff00", FALSE, FALSE);    
+    set_label(hbox, lbl, 7, data[i].platform, 30, "#00ff00", FALSE, FALSE);     
+    set_label(hbox, lbl, 15, data[i].note, 30, "#00ff00", FALSE, FALSE);     
+  }
 
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
   g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
