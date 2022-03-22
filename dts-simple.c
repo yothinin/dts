@@ -5,7 +5,6 @@ GtkWidget *hbox1;
 
 typedef struct
 {
-  const gchar       *id;
   const gchar 		*time;
   const gchar		*dest;
   const gchar		*busno;
@@ -19,15 +18,15 @@ Table;
 
 static Table data[] =
 {
-  {"1", "17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
-  {"2", "17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
-  {"3", "18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "รถติดหน้าหมอชิต", FALSE},
-  {"4", "18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
-  {"5", "18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
-  {"6", "19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
-  {"7", "19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
-  {"8", "19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
-  {"9", "19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
+  {"17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
+  {"17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
+  {"18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "", FALSE},
+  {"18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
+  {"18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
+  {"19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
+  {"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
+  {"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
+  {"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
 };
 
 static gchar *config_get_string(gchar *file, gchar *group, gchar *key){
@@ -114,14 +113,14 @@ set_label(GtkWidget *hbox, GtkWidget *lbl, gint n_char, const gchar *text, gint 
   GdkColor lblBgColor;
   
   gchar *BG_COLOR = config_get_string("dts.conf", "Color", "BG_COLOR");
+  gchar *CONTENT_FONT = config_get_string("dts.conf", "Contents", "CONTENT_FONT");
 
   gdk_color_parse(color, &lblColor);
   gdk_color_parse(BG_COLOR, &lblBgColor);
-  
-  if (BOLD)
-    dfLabel = pango_font_description_from_string("Norasi Bold");
-  else
-    dfLabel = pango_font_description_from_string("Norasi Regular");
+
+  dfLabel = pango_font_description_from_string(CONTENT_FONT);
+  //if (BOLD)
+    //pango_font_description_set_weight(dfLabel, PANGO_WEIGHT_BOLD);
 
   pango_font_description_set_size(dfLabel, size*PANGO_SCALE);
 
@@ -195,11 +194,12 @@ int main(int argc, char *argv[]){
   hbox = gtk_hbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   
-  lblName = gtk_label_new("::ตารางเวลารถออก");
+  gchar *TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
+  lblName = gtk_label_new(TITLE_TEXT);
   lblDateTime = gtk_label_new("");
  
-  gchar *TITLE_FONT = config_get_string("dts.conf", "Fonts", "TITLE_FONT");
-  gint TITLE_SIZE = config_get_integer("dts.conf", "Fonts", "TITLE_SIZE");
+  gchar *TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
+  gint TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
  
   dfDateTime = pango_font_description_from_string(TITLE_FONT);
   pango_font_description_set_size(dfDateTime, TITLE_SIZE*PANGO_SCALE);
@@ -208,7 +208,7 @@ int main(int argc, char *argv[]){
   pango_font_description_set_size(dfName, TITLE_SIZE*PANGO_SCALE);
   
   pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_weight(dfDateTime, PANGO_WEIGHT_BOLD);
+  //pango_font_description_set_weight(dfDateTime, PANGO_WEIGHT_BOLD);
 
   gchar *HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
 
@@ -221,19 +221,19 @@ int main(int argc, char *argv[]){
   gtk_box_pack_start(GTK_BOX(hbox), lblName, FALSE, FALSE, 10);
   gtk_box_pack_end(GTK_BOX(hbox), lblDateTime, FALSE, FALSE, 20);
   
-  gchar *CHAR_WIDTH_F = config_get_string("dts.conf", "Width", "CHAR_WIDTH");
-  gint CHAR_WIDTH = config_get_integer("dts.conf", "Width", CHAR_WIDTH_F);
-  g_free(CHAR_WIDTH_F);
+  gchar *FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
+  gint FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
+  g_free(FONT_SIZE_F);
   
   //header
   hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE,0);
-  set_label(hbox, lblHeader, 5, "เวลา", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 10, "ปลายทาง", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 7, "เลขรถ", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 8, "มาตรฐาน", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 7, "ชานชาลา", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 15, "หมายเหตุ", CHAR_WIDTH, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 5, "เวลา", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 10, "ปลายทาง", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 7, "เลขรถ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 8, "มาตรฐาน", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 7, "ชานชาลา", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
+  set_label(hbox, lblHeader, 15, "หมายเหตุ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
   //
 
   gchar *CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
@@ -243,18 +243,14 @@ int main(int argc, char *argv[]){
   for (i = 0; i < G_N_ELEMENTS (data); i++){
     GtkWidget *lbl=NULL;
     
-    gchar hb[10];
-    sprintf(hb, "%s%s", "hbox", "1");
-    g_print("%s\n", hb);
-    
     hbox = gtk_hbox_new(FALSE, 5);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-    set_label(hbox, lbl, 5, data[i].time, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 10, data[i].dest, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 7, data[i].busno, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 8, data[i].standard, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE);    
-    set_label(hbox, lbl, 7, data[i].platform, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE);     
-    set_label(hbox, lbl, 15, data[i].note, CHAR_WIDTH, CONTENT_COLOR, FALSE, FALSE);     
+    set_label(hbox, lbl, 5, data[i].time, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox, lbl, 10, data[i].dest, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox, lbl, 7, data[i].busno, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox, lbl, 8, data[i].standard, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);    
+    set_label(hbox, lbl, 7, data[i].platform, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
+    set_label(hbox, lbl, 15, data[i].note, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
   }
 
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
