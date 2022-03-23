@@ -1,5 +1,5 @@
 # dts
-Simple Ditital Signage
+Simple display bus schedule. 
 
 Compile:
 
