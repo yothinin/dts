@@ -154,6 +154,7 @@ int main(int argc, char *argv[]){
   GdkPixbuf *icon;
   GtkWidget *vbox;
   GtkWidget *hbox;
+  GtkWidget *hbox_c[9];
   GtkWidget *lblDateTime;
   GtkWidget *lblName = NULL;
   GtkWidget *lblHeader = NULL;
@@ -163,12 +164,20 @@ int main(int argc, char *argv[]){
   GdkPixbuf *image = NULL;
   GdkPixmap *background = NULL;
   GtkStyle *style = NULL;
-  
   GdkColor NameColor;
 
   gtk_init(&argc, &argv);
   
+  // Read file dts.conf to setup color, font and font size.
   gchar *BG_IMAGE = config_get_string("dts.conf", "Images", "BG_IMAGE");
+  gchar *TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
+  gchar *TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
+  gint TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
+  gchar *HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
+  gchar *CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
+  gchar *FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
+  gint FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
+  g_free(FONT_SIZE_F);
 
   image = load_pixbuf_from_file (BG_IMAGE);
   gdk_pixbuf_render_pixmap_and_mask (image, &background, NULL, 0);
@@ -194,13 +203,9 @@ int main(int argc, char *argv[]){
   hbox = gtk_hbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
   
-  gchar *TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
   lblName = gtk_label_new(TITLE_TEXT);
   lblDateTime = gtk_label_new("");
- 
-  gchar *TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
-  gint TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
- 
+
   dfDateTime = pango_font_description_from_string(TITLE_FONT);
   pango_font_description_set_size(dfDateTime, TITLE_SIZE*PANGO_SCALE);
   
@@ -210,8 +215,6 @@ int main(int argc, char *argv[]){
   pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
   //pango_font_description_set_weight(dfDateTime, PANGO_WEIGHT_BOLD);
 
-  gchar *HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
-
   gdk_color_parse(HEADER_COLOR, &NameColor);
   gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &NameColor);
   gtk_widget_modify_fg(GTK_WIDGET(lblName), GTK_STATE_NORMAL, &NameColor);
@@ -220,10 +223,6 @@ int main(int argc, char *argv[]){
   gtk_widget_modify_font(lblName, dfName);
   gtk_box_pack_start(GTK_BOX(hbox), lblName, FALSE, FALSE, 10);
   gtk_box_pack_end(GTK_BOX(hbox), lblDateTime, FALSE, FALSE, 20);
-  
-  gchar *FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
-  gint FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
-  g_free(FONT_SIZE_F);
   
   //header
   hbox = gtk_hbox_new(FALSE, 5);
@@ -236,21 +235,20 @@ int main(int argc, char *argv[]){
   set_label(hbox, lblHeader, 15, "หมายเหตุ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
   //
 
-  gchar *CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
-
   int i;
   /* add data to the list store */
-  for (i = 0; i < G_N_ELEMENTS (data); i++){
+  //for (i = 0; i < G_N_ELEMENTS (data); i++){
+  for (i = 0; i < 9; ++i){
     GtkWidget *lbl=NULL;
     
-    hbox = gtk_hbox_new(FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-    set_label(hbox, lbl, 5, data[i].time, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 10, data[i].dest, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 7, data[i].busno, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox, lbl, 8, data[i].standard, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);    
-    set_label(hbox, lbl, 7, data[i].platform, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
-    set_label(hbox, lbl, 15, data[i].note, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
+    hbox_c[i] = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox_c[i], FALSE, FALSE, 0);
+    set_label(hbox_c[i], lbl, 5, data[i].time, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox_c[i], lbl, 10, data[i].dest, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox_c[i], lbl, 7, data[i].busno, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
+    set_label(hbox_c[i], lbl, 8, data[i].standard, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);    
+    set_label(hbox_c[i], lbl, 7, data[i].platform, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
+    set_label(hbox_c[i], lbl, 15, data[i].note, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
   }
 
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
