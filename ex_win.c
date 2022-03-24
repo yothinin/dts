@@ -50,9 +50,7 @@ static GtkWidget *create_view_and_model(void){
   //GtkTreeViewColumn   *col;
   
   view = gtk_tree_view_new();
-  
-  gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
-  
+ 
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "เวลา", renderer, "text", COL_TIME, NULL);
   
