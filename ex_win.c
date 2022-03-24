@@ -3,27 +3,30 @@
 static GtkWidget *window = NULL;
 static GtkTreeModel *model = NULL;
 
+static GtkTreeModel *create_and_fill_model (void);
+static GtkWidget *create_view_and_model(void);
+
 typedef struct
 {
-  const gchar 	*time;
-  const gchar		*dest;
-  const gchar		*busno;
-  const gchar		*standard;
-  const gchar		*platform;
-  const gchar		*note;
-  const gboolean	out;
-  const gchar		*objname;
+  const gchar    *time;
+  const gchar    *dest;
+  const gchar    *busno;
+  const gchar    *standard;
+  const gchar    *platform;
+  const gchar    *note;
+  const gboolean out;
+  const gchar    *objname;
 }
 Table;
 
 enum
 {
-  COLUMN_TIME,
-  COLUMN_DEST,
-  COLUMN_BUSNO,
-  COLUMN_STANDARD,
-  COLUMN_PLATFORM,
-  COLUMN_NOTE,
+  COL_TIME,
+  COL_DEST,
+  COL_BUSNO,
+  COL_STANDARD,
+  COL_PLATFORM,
+  COL_NOTE,
   NUM_COLUMNS
 };
 
@@ -35,200 +38,140 @@ static Table data[] =
   {"18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
   {"18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
   {"19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
-  {"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
+  {"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "รถมาจากหมอชิต, รถติดหน้าหมอชิต", FALSE},
   {"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
   {"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
 };
 
-static gboolean
-window_closed (GtkWidget *widget,
-               GdkEvent  *event,
-               gpointer   user_data)
-{
-  model = NULL;
-  window = NULL;
-  return FALSE;
+static GtkWidget *create_view_and_model(void){
+  GtkCellRenderer *renderer;
+  //GtkTreeModel *model;
+  GtkWidget *view;
+  //GtkTreeViewColumn   *col;
+  
+  view = gtk_tree_view_new();
+  
+  gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
+  
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "เวลา", renderer, "text", COL_TIME, NULL);
+  
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ปลายทาง", renderer, "text", COL_DEST, NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "เลขรถ", renderer, "text", COL_BUSNO, NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "มาตรฐาน", renderer, "text", COL_STANDARD, NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "ชานชาลา", renderer, "text", COL_PLATFORM, NULL);
+
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view), -1, "หมายเหตุ", renderer, "text", COL_NOTE, NULL);
+
+  GtkTreeViewColumn *col;
+  col = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 5);
+  gtk_tree_view_column_set_sizing(col, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_max_width(col, 100);
+  gtk_tree_view_column_set_fixed_width(col, 100);
+  
+  model = create_and_fill_model();
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(view), COL_PLATFORM);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(view), model);
+
+  
+  g_object_unref(model);
+  return view;
 }
 
-static GtkTreeModel *
-create_model (void)
-{
-  gint i = 0;
+static GtkTreeModel *create_and_fill_model(void){
   GtkListStore *store;
   GtkTreeIter iter;
-
-  /* create list store */
-  store = gtk_list_store_new (NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-
-  /* add data to the list store */
-  for (i = 0; i < G_N_ELEMENTS (data); i++)
-    {
-      gtk_list_store_append (store, &iter);
-      gtk_list_store_set (store, &iter,
-                          COLUMN_TIME, data[i].time,
-                          COLUMN_DEST, data[i].dest,
-                          COLUMN_BUSNO, data[i].busno,
-                          COLUMN_STANDARD, data[i].standard,
-                          COLUMN_PLATFORM, data[i].platform,
-                          COLUMN_NOTE, "", data[i].note
-                          -1);
-    }
-
-  return GTK_TREE_MODEL (store);
-}
-
-static void
-add_columns (GtkTreeView *treeview)
-{
-  GtkCellRenderer *renderer;
-  GtkTreeViewColumn *column;
-  //GtkTreeModel *model = gtk_tree_view_get_model (treeview);
-
-  /* column for bug numbers */
-  renderer = gtk_cell_renderer_text_new ();
-  column = gtk_tree_view_column_new_with_attributes ("เวลา",
-                                                     renderer,
-                                                     "text",
-                                                     COLUMN_TIME,
-                                                     NULL);
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_TIME);
-  gtk_tree_view_append_column (treeview, column);
-
-  /* column for severities */
-  renderer = gtk_cell_renderer_text_new ();
-  column = gtk_tree_view_column_new_with_attributes ("ปลายทาง",
-                                                     renderer,
-                                                     "text",
-                                                     COLUMN_DEST,
-                                                     NULL);
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_DEST);
-  gtk_tree_view_append_column (treeview, column);
-
-  /* column for description */
-  renderer = gtk_cell_renderer_text_new ();
-  column = gtk_tree_view_column_new_with_attributes ("หมายเลขรถ",
-                                                     renderer,
-                                                     "text",
-                                                     COLUMN_BUSNO,
-                                                     NULL);
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_BUSNO);
-  gtk_tree_view_append_column (treeview, column);
-
-  /* มาตรฐาน */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("มาตรฐาน", renderer, "text", COLUMN_STANDARD, NULL);
-  gtk_tree_view_column_set_sort_column_id(column, COLUMN_STANDARD);
-  gtk_tree_view_append_column(treeview, column);
   
-  /* ชานชาลา */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("ชานชาลา", renderer, "text", COLUMN_PLATFORM, NULL);
-  gtk_tree_view_column_set_sort_column_id(column, COLUMN_PLATFORM);
-  gtk_tree_view_append_column(treeview, column);
+  store = gtk_list_store_new(NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   
-  /* หมายเหตุ */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("หมายเหตุ", renderer, "text", COLUMN_NOTE, NULL);
-  gtk_tree_view_column_set_sort_column_id(column, COLUMN_NOTE);
-  gtk_tree_view_append_column(treeview, column);
+  /*Append a row and fill in some data */
+  
+  int i;
+  for (i = 0; i < G_N_ELEMENTS (data); i++){
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(
+      store, &iter, COL_TIME, data[i].time, COL_DEST, data[i].dest, COL_BUSNO, data[i].busno, COL_STANDARD, data[i].standard, 
+      COL_PLATFORM, data[i].platform, COL_NOTE, data[i].note, -1);
+  }
+  
+  return GTK_TREE_MODEL(store);
 }
-//COLUMN_TIME, COLUMN_DEST, COLUMN_BUSNO, COLUMN_STANDARD, COLUMN_PLATFORM, COLUMN_NOTE, NUM_COLUMNS
 
 GtkWidget *
 do_list_store (GtkWidget *do_widget)
 {
-  if (!window)
-    {
-      GtkWidget *vbox;
-      GtkWidget *label;
-      GtkWidget *sw;
-      GtkWidget *treeview;
-      
-      GtkWidget *hbox;
-      GtkWidget *hboxl;
-      GtkWidget *hboxr;
+  if (!window){
+    GtkWidget *vbox;
+    GtkWidget *hbox;
+    GtkWidget *hboxl;
+    GtkWidget *hboxr;
+    GtkWidget *vboxl;
+    GtkWidget *vboxr;
+    GtkWidget *label;
+    GtkWidget *view;
 
-      // create window, etc
-      window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_screen (GTK_WINDOW (window),
-                             gtk_widget_get_screen (do_widget));
-      gtk_window_set_title (GTK_WINDOW (window), "ตารางเวลารถออก");
+    
+    // create window, etc
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    //gtk_window_set_screen (GTK_WINDOW (window),
+    //                       gtk_widget_get_screen (do_widget));
+    gtk_window_set_title (GTK_WINDOW (window), "ตารางเวลารถออก");
+    g_signal_connect (window, "destroy",
+                     G_CALLBACK (gtk_widget_destroyed), &window);
+    gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+    gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 
-      g_signal_connect (window, "destroy",
-                        G_CALLBACK (gtk_widget_destroyed), &window);
-      //gtk_container_set_border_width (GTK_CONTAINER (window), 8);
 
-      hbox = gtk_hbox_new(FALSE, 5);
-      gtk_container_add(GTK_CONTAINER(window), hbox);
-  
-      hboxl = gtk_hbox_new(FALSE, 5);
-      gtk_container_add(GTK_CONTAINER(hbox), hboxl);
-      //gtk_box_pack_start(GTK_BOX(hbox), hboxl, FALSE, FALSE, 5);
-      
-      hboxr = gtk_hbox_new(FALSE, 5);
-      gtk_container_add(GTK_CONTAINER(hbox), hboxr);
-      label = gtk_label_new(":::");
-      gtk_box_pack_start(GTK_BOX(hboxr), label, FALSE, FALSE, 5);
-      
-      vbox = gtk_vbox_new(FALSE, 10);
-      gtk_container_add(GTK_CONTAINER(hboxl), vbox);
-      
-      label = gtk_label_new("ตารางรถออก");
-      gtk_container_add(GTK_CONTAINER(vbox), label);
-      
-      sw = gtk_scrolled_window_new (NULL, NULL);
-      gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
-                                           GTK_SHADOW_ETCHED_IN);
-      gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw),
-                                      GTK_POLICY_NEVER,
-                                      GTK_POLICY_AUTOMATIC);
-      
-      gtk_box_pack_start (GTK_BOX (vbox), sw, TRUE, TRUE, 0);
+    // Create layouts.
+    vbox = gtk_vbox_new(FALSE, 5);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
+        
+    hbox = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 5);
+    
+    hboxl = gtk_hbox_new(FALSE, 5);
+    gtk_container_add(GTK_CONTAINER(hbox), hboxl);  // important
+    
+    vboxl = gtk_vbox_new(FALSE, 5);
+    gtk_container_add(GTK_CONTAINER(hboxl), vboxl);
+    
+    label = gtk_label_new("ตารางรถออก");
+    gtk_misc_set_alignment (GTK_MISC (label), 0, 0);
+    gtk_box_pack_start(GTK_BOX(vboxl), label, FALSE, FALSE, 5);
+        
+    hboxr = gtk_hbox_new(FALSE, 5);
+    gtk_container_add(GTK_CONTAINER(hbox), hboxr);  // important
+    
+    label = gtk_label_new(":::");
+    gtk_box_pack_start(GTK_BOX(hboxr), label, FALSE, FALSE, 5);
+    (void)vboxr;
+    //
+    
+    // Add GtkTreeView to hboxl
+    view = create_view_and_model();
+    gtk_tree_view_set_reorderable(GTK_TREE_VIEW(view), TRUE);
+    gtk_box_pack_start(GTK_BOX(vboxl), view, FALSE, FALSE, 0);    
+    //
 
-      // create tree model 
-      model = create_model ();
-
-      // create tree view
-      treeview = gtk_tree_view_new_with_model (model);
-      gtk_tree_view_set_rules_hint (GTK_TREE_VIEW (treeview), TRUE);
-      //gtk_tree_view_set_search_column (GTK_TREE_VIEW (treeview), COLUMN_DESCRIPTION);
-
-      g_object_unref (model);
-
-      gtk_container_add (GTK_CONTAINER (sw), treeview);
-
-      // add columns to the tree view 
-      add_columns (GTK_TREE_VIEW (treeview));
-
-      // finish & show 
-      gtk_window_set_default_size (GTK_WINDOW (window), 800, 600);
-      g_signal_connect (window, "delete-event",
-                        G_CALLBACK (window_closed), NULL);
-    }
-
-  if (!gtk_widget_get_visible (window))
-    {
+    if (!gtk_widget_get_visible (window)){
       gtk_widget_show_all (window);
-    }
-  else
-    {
+    }else{
       gtk_widget_destroy (window);
       window = NULL;
     }
-
+  }
   return window;
 }
 
 int main(int argc, char *argv[]){
-  GtkWidget *window;
-/*
-  GtkWidget *vbox;
-  GtkWidget *hbox;
-  GtkWidget *hboxl;
-  GtkWidget *hboxr;
-  GtkWidget *label;
-  //GtkWidget *button;
-*/
   gtk_init(&argc, &argv);
 
   window = do_list_store(NULL);
