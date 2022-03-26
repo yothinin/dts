@@ -1,0 +1,102 @@
+<interface>
+  <object class="GtkWindow" id="window">
+    <property name="title">DTS Time</property>
+    <property name="default-width">600</property>
+    <property name="default-height">400</property>
+    <property name="type">GTK_WINDOW_TOPLEVEL</property>
+    <property name="window-position">GTK_WIN_POS_CENTER</property>
+    <signal name="destroy" handler="gtk_main_quit"/>
+    <child>
+      <object class="GtkVBox" id="vboxmain">
+        <property name="homogeneous">False</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkHBox" id="hboxmain">
+            <property name="homogeneous">False</property>
+            <property name="spacing">5</property>
+              <child>
+                <object class="GtkHBox" id="hboxleft">
+                  <property name="homogeneous">False</property>
+                  <property name="spacing">5</property>
+                  <child>
+                    <object class="GtkLabel" id="Label Left">
+                      <property name="label">Label Left</property>
+                      <property name="xalign">0</property>
+                    </object>
+                  </child>
+                </object>
+              </child>
+              <child>
+                <object class="GtkHBox" id="hboxright">
+                  <property name="homogeneous">False</property>
+                  <property name="spacing">5</property>
+                  <child>
+                    <object class="GtkVBox" id="vboxRight">
+                      <property name="homogeneous">False</property>
+                      <property name="spacing">5</property>
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont1">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblTime">
+                              <property name="label">เวลา</property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">6</property>
+                            </object>
+                          </child>
+                          <child>
+                            <object class="GtkEntry" id="entTime">
+                              <property name="max-length">5</property>
+                              <property name="width-chars">5</property>
+                              <property name="xalign">0</property>
+                            </object>
+                          </child>
+                        </object>
+
+                      </child>
+
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont2">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblDest">
+                              <property name="label">ปลายทาง</property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">10</property>
+                            </object>
+                          </child>
+                          <child>
+                            <object class="GtkEntry" id="entDesc">
+                              <property name="max-length">40</property>
+                              <property name="width-chars">40</property>
+                            </object>
+                          </child>
+                        </object>
+ 
+                      </child>
+
+
+                    </object>
+                    <packing>
+                      <property name="padding">5</property>
+                      <property name="expand">False</property>
+                      <property name="fill">False</property>
+                    </packing>
+                  </child>
+                </object>
+              </child>
+          </object>
+          <packing>
+            <property name="padding">5</property>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
