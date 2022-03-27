@@ -6,6 +6,13 @@
 
 #include <gtk/gtk.h>
 
+GtkBuilder* builder;
+GtkWidget *entTime, *entDest, *entBusNo, *entPlatform, *entNote;
+GtkTreeView *treeview = NULL;
+GtkTreeModel *model = NULL;
+GtkListStore *liststore = NULL;
+GtkTreeIter iter;
+
 G_MODULE_EXPORT 
 void btnClicked(GtkWidget *widget, gpointer user_data)
 {
@@ -16,6 +23,45 @@ G_MODULE_EXPORT
 void btnSaveClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnSave clicked...\n");
+  entTime = GTK_WIDGET(gtk_builder_get_object(builder, "entTime"));
+  entDest = GTK_WIDGET(gtk_builder_get_object(builder, "entDest"));
+  entBusNo = GTK_WIDGET(gtk_builder_get_object(builder, "entBusNo"));
+  entPlatform = GTK_WIDGET(gtk_builder_get_object(builder, "entPlatform"));
+  entNote = GTK_WIDGET(gtk_builder_get_object(builder, "entNote"));
+  g_print("ข้อมูล:\n%s\n%s\n%s\n%s\n%s\n", 
+    gtk_entry_get_text(GTK_ENTRY(entTime)), 
+    gtk_entry_get_text(GTK_ENTRY(entDest)),
+    gtk_entry_get_text(GTK_ENTRY(entBusNo)),
+    gtk_entry_get_text(GTK_ENTRY(entPlatform)),
+    gtk_entry_get_text(GTK_ENTRY(entNote))
+  );
+  
+  // set treeview data
+  //gchar* data = "17:00";
+  //gchar* item = NULL;
+  
+  treeview = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview1"));
+  model = gtk_tree_view_get_model(treeview);
+  liststore = GTK_LIST_STORE (model);
+  
+  
+
+  gtk_list_store_append(liststore, &iter);
+  //gtk_list_store_set(liststore, &iter, 0, data, -1);
+  
+  /*
+  gtk_list_store_set(liststore, &iter, 
+    0, "18:00", 
+    1, "18-102", 
+    2, "ม.1ก", 
+    3, "ประตู 3", 
+    4, "---", 
+    -1
+  );
+  */
+
+  //gtk_tree_model_get(model, &iter, 0, item, -1);
+  
 }
 
 G_MODULE_EXPORT 
@@ -41,14 +87,13 @@ GdkPixbuf
 
 int main(int argc, char** argv)
 {
-  
   GdkPixbuf *icon;
   icon = create_pixbuf("Digital-Signage.png");
   
 	gtk_init(&argc, &argv);
 
     // Create a builder object that will load the file.
-    GtkBuilder* builder = gtk_builder_new();
+    builder = gtk_builder_new();
 
     // Load the XML from a file.
     gtk_builder_add_from_file(builder, "dts_scr_time.xml", NULL);

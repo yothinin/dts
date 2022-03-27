@@ -1,4 +1,41 @@
 <interface>
+  <object class="GtkListStore" id="liststore1">
+    <columns>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">17.00</col>
+        <col id="1">เชียงใหม่</col>
+        <col id="2">18-1</col>
+        <col id="2">ม.1ก</col>
+        <col id="2">ประตู 3</col>
+        <col id="2">---</col>
+      </row>
+      <row>
+        <col id="0">18.00</col>
+        <col id="1">เชียงของ</col>
+        <col id="2">962-4</col>
+        <col id="2">ม.1ข</col>
+        <col id="2">3</col>
+        <col id="2">---</col>
+      </row>
+      <row>
+        <col id="0">19.00</col>
+        <col id="1">เชียงราย</col>
+        <col id="2">909-1</col>
+        <col id="2">ม.1ก</col>
+        <col id="2">ประตู 3</col>
+        <col id="2">---</col>
+      </row>
+    </data> 
+  </object>
+  
   <object class="GtkWindow" id="window">
     <property name="title">DTS Time</property>
     <property name="default-width">800</property>
@@ -18,20 +55,126 @@
                 <object class="GtkHBox" id="hboxleft">
                   <property name="homogeneous">False</property>
                   <property name="spacing">5</property>
+                  
                   <child>
-                    <object class="GtkLabel" id="Label Left">
-                      <property name="label">Label Left</property>
-                      <property name="width-chars">40</property>
-                      <property name="xalign">0</property>
-                      <property name="xpad">5</property>
-                      <property name="ypad">5</property>                      
+                    <object class="GtkVBox" id="vboxleft">
+                      <property name="homogeneous">False</property>
+                      <property name="spacing">5</property>
+                      
+                        <child>
+                          <object class="GtkLabel" id="lblLeft">
+                            <property name="label">::: ตารางเวลารถออก</property>
+                            <property name="width-chars">40</property>
+                            <property name="xalign">0</property>
+                            <property name="xpad">5</property>
+                            <property name="ypad">5</property>                      
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="pack-type">start</property>
+                          </packing>
+                        </child>
+
+                        <child>
+                          <object class="GtkTreeView" id="treeview1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="model">liststore1</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection" id="treeview-selection1"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                                <property name="title" translatable="yes">เวลา</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext1">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                                <property name="title" translatable="yes">ปลายทาง</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext2">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn3">
+                                <property name="title" translatable="yes">หมายเลขรถ</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext3">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn4">
+                                <property name="title" translatable="yes">มาตรฐาน</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext4">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn5">
+                                <property name="title" translatable="yes">ชานชาลา</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext5">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkTreeViewColumn" id="treeviewcolumn6">
+                                <property name="title" translatable="yes">หมายเหตุ</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext6">
+                                    <property name="height">40</property>
+                                  </object>
+                                  <attributes>
+                                    <attribute name="text">0</attribute>
+                                  </attributes>
+                                </child>
+                              </object>
+                            </child>
+
+
+                          </object>
+                        </child>
+                      
                     </object>
-                    <packing>
-                      <property name="expand">False</property>
-                      <property name="fill">False</property>
-                      <property name="pack-type">start</property>
-                    </packing>
                   </child>
+    
                 </object>
                 <!-- no packing set for hboxleft -->
                 <packing>
@@ -98,7 +241,7 @@
                             </object>
                           </child>
                           <child>
-                            <object class="GtkEntry" id="entDesc">
+                            <object class="GtkEntry" id="entDest">
                               <property name="max-length">30</property>
                               <property name="width-chars">30</property>
                             </object>
