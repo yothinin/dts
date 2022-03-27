@@ -1,7 +1,7 @@
 <interface>
   <object class="GtkWindow" id="window">
     <property name="title">DTS Time</property>
-    <property name="default-width">600</property>
+    <property name="default-width">800</property>
     <property name="default-height">400</property>
     <property name="type">GTK_WINDOW_TOPLEVEL</property>
     <property name="window-position">GTK_WIN_POS_CENTER</property>
@@ -21,10 +21,24 @@
                   <child>
                     <object class="GtkLabel" id="Label Left">
                       <property name="label">Label Left</property>
+                      <property name="width-chars">40</property>
                       <property name="xalign">0</property>
+                      <property name="xpad">5</property>
+                      <property name="ypad">5</property>                      
                     </object>
+                    <packing>
+                      <property name="expand">False</property>
+                      <property name="fill">False</property>
+                      <property name="pack-type">start</property>
+                    </packing>
                   </child>
                 </object>
+                <!-- no packing set for hboxleft -->
+                <packing>
+                  <property name="expand">False</property>
+                  <property name="fill">False</property>
+                  <property name="pack-type">start</property>                            
+                </packing>
               </child>
               <child>
                 <object class="GtkHBox" id="hboxright">
@@ -43,21 +57,35 @@
                             <object class="GtkLabel" id="lblTime">
                               <property name="label">เวลา</property>
                               <property name="xalign">0</property>
-                              <property name="width-chars">6</property>
+                              <property name="width-chars">10</property>
                             </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
                           </child>
                           <child>
                             <object class="GtkEntry" id="entTime">
                               <property name="max-length">5</property>
-                              <property name="width-chars">5</property>
-                              <property name="xalign">0</property>
+                              <property name="width-chars">6</property>
                             </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
                           </child>
                         </object>
-
+                        <!-- packing for content1 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="padding">5</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
                       </child>
-
-
+                      
                       <child>
                         <object class="GtkHBox" id="hboxcont2">
                           <property name="homogeneous">False</property>
@@ -71,29 +99,203 @@
                           </child>
                           <child>
                             <object class="GtkEntry" id="entDesc">
-                              <property name="max-length">40</property>
-                              <property name="width-chars">40</property>
+                              <property name="max-length">30</property>
+                              <property name="width-chars">30</property>
                             </object>
                           </child>
                         </object>
- 
+                        <!-- packing for content2 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
+                      </child>
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont3">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblBusNo">
+                              <property name="label">เลขรถ</property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">10</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkEntry" id="entBusNo">
+                              <property name="max-length">10</property>
+                              <property name="width-chars">11</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                        </object>
+                        <!-- packing for content3 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="padding">5</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
+                      </child>
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont4">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblPlatform">
+                              <property name="label">ชานชาลา</property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">10</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkEntry" id="entPlatform">
+                              <property name="max-length">10</property>
+                              <property name="width-chars">11</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                        </object>
+                        <!-- packing for content4 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="padding">5</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
+                      </child>
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont5">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblNote">
+                              <property name="label">หมายเหตุ</property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">10</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkEntry" id="entNote">
+                              <property name="max-length">20</property>
+                              <property name="width-chars">21</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                        </object>
+                        <!-- packing for content5 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="padding">5</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
+                      </child>
+
+                      <child>
+                        <object class="GtkHBox" id="hboxcont6">
+                          <property name="homogeneous">False</property>
+                          <property name="spacing">5</property>
+                          <child>
+                            <object class="GtkLabel" id="lblSpace1">
+                              <property name="label"></property>
+                              <property name="xalign">0</property>
+                              <property name="width-chars">10</property>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkButton" id="btnSave">
+                              <property name="label">บันทึก</property>
+                              <signal name="clicked" handler="btnSaveClicked" />
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkButton" id="btnCancel">
+                              <property name="label">ยกเลิก</property>
+                              <signal name="clicked" handler="btnCancelClicked" />
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">False</property>
+                              <property name="pack-type">start</property>                            
+                            </packing>
+                          </child>
+
+                        </object>
+                        <!-- packing for content6 -->
+                        <packing>
+                          <property name="expand">False</property>
+                          <property name="fill">False</property>
+                          <property name="padding">5</property>
+                          <property name="pack-type">start</property>                            
+                        </packing>
                       </child>
 
 
                     </object>
+                    <!-- packing for vboxright -->
                     <packing>
-                      <property name="padding">5</property>
                       <property name="expand">False</property>
                       <property name="fill">False</property>
+                      <property name="pack-type">start</property>                            
                     </packing>
                   </child>
                 </object>
+                <!-- packing for hboxrigh -->
+                <packing>
+                  <property name="expand">False</property>
+                  <property name="fill">False</property>
+                  <property name="pack-type">start</property>                            
+                </packing>
+
               </child>
           </object>
+          <!-- packing for hboxmain -->
           <packing>
-            <property name="padding">5</property>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="pack-type">start</property>                            
           </packing>
         </child>
       </object>

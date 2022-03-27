@@ -6,9 +6,24 @@
 
 #include <gtk/gtk.h>
 
-G_MODULE_EXPORT void btnClicked(GtkWidget *widget, gpointer user_data){
+G_MODULE_EXPORT 
+void btnClicked(GtkWidget *widget, gpointer user_data)
+{
   g_print("Button clicked...\n");
 }
+
+G_MODULE_EXPORT 
+void btnSaveClicked(GtkWidget *widget, gpointer user_data)
+{
+  g_print("btnSave clicked...\n");
+}
+
+G_MODULE_EXPORT 
+void btnCancelClicked(GtkWidget *widget, gpointer user_data)
+{
+  g_print("btnCancel clicked...\n");
+}
+
 
 GdkPixbuf 
 *create_pixbuf(const gchar *filename)
@@ -54,9 +69,6 @@ int main(int argc, char** argv)
     ///GtkWidget *butt2 = GTK_WIDGET(gtk_builder_get_object(builder, "ok_button"));
     
     ///g_signal_connect(butt2, "clicked", G_CALLBACK(gtk_main_quit), NULL);
-
-    GtkWidget *entTime = GTK_WIDGET(gtk_builder_get_object(builder, "entTime"));
-    gtk_entry_set_width_chars(GTK_ENTRY(entTime), 6);
 
     gtk_builder_connect_signals(builder, NULL);
     
