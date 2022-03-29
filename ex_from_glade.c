@@ -98,6 +98,7 @@ int main(int argc, char** argv)
 
   GtkBuilder* builder = gtk_builder_new();
   //gtk_builder_add_from_file(builder, "ex_from_glade.xml", NULL);
+  
   builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
 

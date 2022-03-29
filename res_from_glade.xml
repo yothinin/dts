@@ -1,0 +1,8 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/bustecz/dts">
+    <file>ex_from_glade.xml</file>
+  </gresource>
+</gresources>
+
