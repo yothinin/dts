@@ -5,7 +5,7 @@
 // signal handler at runtime. See the Makefile for implementation.
 
 #include <gtk/gtk.h>
-#include "ex_from_glade-res.c"
+//#include "ex_from_glade-res.c"
 
 typedef struct
 {
@@ -61,7 +61,7 @@ void btnClicked(GtkWidget *widget, gpointer user_data)
   g_print("Button clicked...\n");
 }
 
-G_MODULE_EXPORT 
+G_MODULE_EXPORT
 void btnSaveClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnSave clicked...\n");
@@ -88,33 +88,40 @@ GdkPixbuf
   return pixbuf;
 }
 
-int main(int argc, char** argv)
+int main(int argc, char *argv[])
 {
 
+  GtkBuilder* builder;
   GdkPixbuf *icon;
+  //GSList *lst, *objList;
+  GObject* window;
+  GtkListStore *store;
+  GtkTreeIter iter;
+  
   icon = create_pixbuf("Digital-Signage.png");
 
-	gtk_init(&argc, &argv);
+  gtk_init(&argc, &argv);
 
-  GtkBuilder* builder = gtk_builder_new();
-  //gtk_builder_add_from_file(builder, "ex_from_glade.xml", NULL);
+  builder = gtk_builder_new();
+  gtk_builder_add_from_file(builder, "ex_tree.glade", NULL);
   
-  builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
+  //builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
 
-    GSList *lst, *objList = gtk_builder_get_objects(builder);
+  /*
+    objList = gtk_builder_get_objects(builder);
 
     g_print("%p\n", objList);
     for (lst = objList; lst != NULL; lst = lst->next){
       g_print("%p\n", (char*)(lst->data));
     }
+   */
 
-  GObject* window = gtk_builder_get_object(builder, "window");
+  window = gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
 
-  GtkListStore *store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
-  GtkTreeIter iter;
+  store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
 
   int i;
   for (i = 0; i < G_N_ELEMENTS (data); i++){

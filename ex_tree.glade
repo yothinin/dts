@@ -2,6 +2,44 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkListStore" id="listDest">
+    <columns>
+      <!-- column-name dest_code -->
+      <column type="gchararray"/>
+      <!-- column-name dest_name -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">00</col>
+        <col id="1" translatable="yes">- - ปลายทาง - -</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">3</col>
+        <col id="1" translatable="yes">เชียงแสน</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">18</col>
+        <col id="1" translatable="yes">เชียงใหม่</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">20</col>
+        <col id="1" translatable="yes">ขอนแก่น</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">47</col>
+        <col id="1" translatable="yes">ทุ่งช้าง</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">909</col>
+        <col id="1" translatable="yes">เชียงราย</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">910</col>
+        <col id="1" translatable="yes">น่าน</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkListStore" id="liststore1">
     <columns>
       <!-- column-name col_time -->
@@ -17,54 +55,46 @@
       <!-- column-name col_note -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkListStore" id="lstStandard">
+    <columns>
+      <!-- column-name std_code -->
+      <column type="gchararray"/>
+      <!-- column-name std_name -->
+      <column type="gchararray"/>
+    </columns>
     <data>
       <row>
-        <col id="0" translatable="yes">17:00</col>
-        <col id="1" translatable="yes">เชียงใหม่</col>
-        <col id="2" translatable="yes">18-52</col>
-        <col id="3" translatable="yes">ม.1ก</col>
-        <col id="4" translatable="yes">ประตู 3</col>
-        <col id="5" translatable="yes">---</col>
+        <col id="0" translatable="yes">00</col>
+        <col id="1" translatable="yes">- - มาตรฐาน - -</col>
       </row>
       <row>
-        <col id="0" translatable="yes">18:00</col>
-        <col id="1" translatable="yes">เชียงของ</col>
-        <col id="2" translatable="yes">962-5</col>
-        <col id="3" translatable="yes">ม.1ข</col>
-        <col id="4" translatable="yes">1</col>
-        <col id="5" translatable="yes"/>
+        <col id="0" translatable="yes">11</col>
+        <col id="1" translatable="yes">ม.1ก</col>
       </row>
       <row>
-        <col id="0" translatable="yes">19:00</col>
-        <col id="1" translatable="yes">แม่ฮ่องสอน</col>
-        <col id="2" translatable="yes">961-1</col>
-        <col id="3" translatable="yes">ม.1พ</col>
-        <col id="4" translatable="yes">3</col>
-        <col id="5" translatable="yes"/>
+        <col id="0" translatable="yes">12</col>
+        <col id="1" translatable="yes">ม.1ข</col>
       </row>
       <row>
-        <col id="0" translatable="yes">19:30</col>
-        <col id="1" translatable="yes">น่าน</col>
-        <col id="2" translatable="yes">910-7</col>
-        <col id="3" translatable="yes">ม.1ข</col>
-        <col id="4" translatable="yes"/>
-        <col id="5" translatable="yes"/>
+        <col id="0" translatable="yes">13</col>
+        <col id="1" translatable="yes">ม.1พ</col>
       </row>
       <row>
-        <col id="0" translatable="yes">19:45</col>
-        <col id="1" translatable="yes">ทุ่งช้าง</col>
-        <col id="2" translatable="yes">47-2</col>
-        <col id="3" translatable="yes">ม.1ก</col>
-        <col id="4" translatable="yes">ประตู 3</col>
-        <col id="5" translatable="yes"/>
+        <col id="0" translatable="yes">2</col>
+        <col id="1" translatable="yes">ม.2</col>
       </row>
       <row>
-        <col id="0" translatable="yes">20:00</col>
-        <col id="1" translatable="yes">ขอนแก่น</col>
-        <col id="2" translatable="yes">20-3</col>
-        <col id="3" translatable="yes">ม.1พ</col>
-        <col id="4" translatable="yes"/>
-        <col id="5" translatable="yes"/>
+        <col id="0" translatable="yes">41</col>
+        <col id="1" translatable="yes">ม.4ก</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">42</col>
+        <col id="1" translatable="yes">ม.4ข</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">43</col>
+        <col id="1" translatable="yes">ม.4ค</col>
       </row>
     </data>
   </object>
@@ -261,6 +291,7 @@
                         <property name="can-focus">True</property>
                         <property name="max-length">5</property>
                         <property name="width-chars">6</property>
+                        <property name="max-width-chars">5</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -298,20 +329,28 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBoxText" id="cmbDest">
+                      <object class="GtkComboBox" id="cmbDest">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <items>
-                          <item id="0" translatable="yes"> </item>
-                          <item id="18" translatable="yes">เชียงใหม่</item>
-                          <item id="909" translatable="yes">เชียงราย</item>
-                          <item id="910" translatable="yes">น่าน</item>
-                          <item id="961" translatable="yes">แม่ฮ่องสอน</item>
-                        </items>
+                        <property name="model">listDest</property>
+                        <property name="wrap-width">1</property>
+                        <property name="id-column">0</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="dest_route"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="dest_name"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -387,24 +426,27 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBoxText">
+                      <object class="GtkComboBox" id="cmbStandard">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <items>
-                          <item id="00" translatable="yes"> </item>
-                          <item id="11" translatable="yes">ม.1ก</item>
-                          <item id="12" translatable="yes">ม.1ข</item>
-                          <item id="14" translatable="yes">ม.1พ</item>
-                          <item id="20" translatable="yes">ม.2</item>
-                          <item id="41" translatable="yes">ม.4ก</item>
-                          <item id="42" translatable="yes">ม.4ข</item>
-                          <item id="43" translatable="yes">ม.4ค</item>
-                          <item id="44" translatable="yes">ม.4พ</item>
-                        </items>
+                        <property name="model">lstStandard</property>
+                        <property name="wrap-width">1</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="std_code"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                        <child>
+                          <object class="GtkCellRendererText" id="std_name"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">False</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
