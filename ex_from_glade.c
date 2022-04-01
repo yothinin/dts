@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
   GtkBuilder* builder;
   GdkPixbuf *icon;
-  //GSList *lst, *objList;
+  GSList *lst, *objList;
   GObject* window;
   GtkListStore *store;
   GtkTreeIter iter;
@@ -108,14 +108,12 @@ int main(int argc, char *argv[])
   //builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
 
-  /*
     objList = gtk_builder_get_objects(builder);
 
     g_print("%p\n", objList);
     for (lst = objList; lst != NULL; lst = lst->next){
       g_print("%p\n", (char*)(lst->data));
     }
-   */
 
   window = gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
