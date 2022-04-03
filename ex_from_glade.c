@@ -20,6 +20,20 @@ typedef struct
 }
 Table;
 
+typedef struct
+{
+  const gchar *std_code;
+  const gchar *std_name;
+}
+Standard;
+
+typedef struct
+{
+  const gchar *dest_code;
+  const gchar *dest_name;
+}
+Destination;
+
 enum
 {
   COL_TIME,
@@ -42,6 +56,36 @@ static Table data[] =
   {"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "รถมาจากหมอชิต, รถติดหน้าหมอชิต", FALSE},
   {"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
   {"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
+};
+
+static Standard std[] = 
+{
+  {"00", "-- มาตรฐาน --"}, 
+  {"11", "ม.1ก"},
+  {"12", "ม.1ข"},
+  {"13", "ม.1พ"},
+  {"20", "ม.2"},
+  {"41", "ม.4ก"},
+  {"42", "ม.4ข"},
+  {"43", "ม.4ค"},
+  {"44", "ม.4พ"},  
+};
+
+static Destination dest[] = 
+{
+  {"00", "-- ปลายทาง --"}, 
+  {"3", "เชียงแสน"},
+  {"13", "ลำพูน"},
+  {"18", "เชียงใหม่"},
+  {"20", "ขอนแก่น"},
+  {"31", "สุรินทร์"},
+  {"47", "ทุ่งช้าง"},
+  {"909", "เชียงราย"},
+  {"910", "น่าน"},
+  {"922", "แพร่"},
+  {"923", "พะเยา"},
+  {"957", "แม่สาย"},
+  {"962", "เชียงของ"},
 };
 
 G_MODULE_EXPORT
@@ -95,15 +139,16 @@ int main(int argc, char *argv[])
   GdkPixbuf *icon;
   GSList *lst, *objList;
   GObject* window;
-  GtkListStore *store;
-  GtkTreeIter iter;
+  GtkListStore *store, *store_std, *store_dest;
+  GtkTreeIter iter, iter2, iter3;
   
   icon = create_pixbuf("Digital-Signage.png");
 
   gtk_init(&argc, &argv);
 
-  builder = gtk_builder_new();
-  gtk_builder_add_from_file(builder, "ex_tree.glade", NULL);
+  ///builder = gtk_builder_new();
+  ///gtk_builder_add_from_file(builder, "ex_tree.glade", NULL);
+  builder = gtk_builder_new_from_file("ex_tree.glade");
   
   //builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
@@ -127,6 +172,20 @@ int main(int argc, char *argv[])
     gtk_list_store_set(
       store, &iter, COL_TIME, data[i].time, COL_DEST, data[i].dest, COL_BUSNO, data[i].busno, COL_STANDARD, data[i].standard, 
       COL_PLATFORM, data[i].platform, COL_NOTE, data[i].note, -1);
+  }
+  
+  store_std = GTK_LIST_STORE(gtk_builder_get_object(builder, "listStandard"));
+  for (i = 0; i < G_N_ELEMENTS(std); ++i){
+    gtk_list_store_append(store_std, &iter2);
+    gtk_list_store_set(
+      store_std, &iter2, 0, std[i].std_code, 1, std[i].std_name, -1);
+  }
+  
+  store_dest = GTK_LIST_STORE(gtk_builder_get_object(builder, "listDest"));
+  for (i = 0; i < G_N_ELEMENTS(dest); ++i){
+    gtk_list_store_append(store_dest, &iter3);
+    gtk_list_store_set(
+      store_dest, &iter3, 0, dest[i].dest_code, 1, dest[i].dest_name, -1);
   }
 
   gtk_widget_show_all(GTK_WIDGET(window));
