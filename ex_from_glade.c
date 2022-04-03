@@ -60,7 +60,6 @@ static Table data[] =
 
 static Standard std[] = 
 {
-  {"00", "-- มาตรฐาน --"}, 
   {"11", "ม.1ก"},
   {"12", "ม.1ข"},
   {"13", "ม.1พ"},
@@ -73,7 +72,6 @@ static Standard std[] =
 
 static Destination dest[] = 
 {
-  {"00", "-- ปลายทาง --"}, 
   {"3", "เชียงแสน"},
   {"13", "ลำพูน"},
   {"18", "เชียงใหม่"},
@@ -98,6 +96,7 @@ void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata
     g_print("Selected...\n");
 
 }
+
 
 G_MODULE_EXPORT 
 void btnClicked(GtkWidget *widget, gpointer user_data)
@@ -187,6 +186,13 @@ int main(int argc, char *argv[])
     gtk_list_store_set(
       store_dest, &iter3, 0, dest[i].dest_code, 1, dest[i].dest_name, -1);
   }
+
+  GtkWidget *entBusNo = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
+  GtkWidget *cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
+  
+  g_object_bind_property (cmbDest, "active-id",
+                          entBusNo, "text",
+                          G_BINDING_BIDIRECTIONAL);
 
   gtk_widget_show_all(GTK_WIDGET(window));
 
