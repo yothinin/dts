@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
-#include "dts_function.h"
+#include "dts_functions.h"
 
 typedef struct
 {
