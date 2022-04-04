@@ -116,6 +116,17 @@ void btnCancelClicked(GtkWidget *widget, gpointer user_data)
   g_print("btnCancel clicked...\n");
 }
 
+G_MODULE_EXPORT
+void dest_change(GtkWidget *widget, gpointer user_data)
+{
+  g_print("Destination selected.\n");
+}
+
+G_MODULE_EXPORT
+void std_change(GtkWidget *widget, gpointer user_data)
+{
+  g_print("Standard selected.\n");
+}
 
 GdkPixbuf 
 *create_pixbuf(const gchar *filename)
