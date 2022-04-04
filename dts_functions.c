@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <glib/gstdio.h>
 #include "dts_functions.h"
 
 void
@@ -49,11 +48,6 @@ gchar
   //gsize length;
   gchar *val;
   
-  gchar *home = g_get_home_dir();
-  g_print("Home: %s\n", home);
-
-  g_chdir("/home/yothinin/projects/dts");
-
   key_file = g_key_file_new();
   error = NULL;
     

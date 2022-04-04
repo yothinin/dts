@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <glib/gstdio.h>
 #include <glib/gprintf.h>
 #include "dts_functions.h"
 
@@ -61,6 +62,11 @@ int main(int argc, char *argv[]){
   GdkPixmap *background = NULL;
   GtkStyle *style = NULL;
   GdkColor NameColor;
+  
+  gchar *home[256];
+  g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
+  g_print("Home: %s\n", home);
+  g_chdir(home);
 
   gtk_init(&argc, &argv);
   
