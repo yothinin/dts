@@ -218,6 +218,7 @@ int main(int argc, char *argv[])
   g_object_bind_property (cmbStandard, "active-id",
                           entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
+                          
 
   gtk_widget_show_all(GTK_WIDGET(window));
 
