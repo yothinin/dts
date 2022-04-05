@@ -187,11 +187,11 @@ void btnSaveClicked(GtkWidget *widget, gpointer user_data)
   const gchar *depNote = gtk_entry_get_text(GTK_ENTRY(entNote));
   
   gchar buf_sql[256];
-  g_sprintf(buf_sql, "INSERT INTO dts_depart VALUES(dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStandard, depPlatform, depNote, "2022-04-06,20:00:00");
+  g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStandard, depPlatform, depNote, "2022-04-06,20:00:00");
 
   db_insert(buf_sql);
   
-  g_free(buf_sql);
+  //g_free(buf_sql);
   
 }
 
@@ -319,11 +319,11 @@ int main(int argc, char *argv[])
 
   db_init();
   db_connect();
-  db_close();  
 
   gtk_widget_show_all(GTK_WIDGET(window));
 
   gtk_main();
+  db_close();  
 
   return 0;
 }
