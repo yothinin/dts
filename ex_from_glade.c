@@ -117,6 +117,7 @@ void btnCancelClicked(GtkWidget *widget, gpointer user_data)
 }
 
 G_MODULE_EXPORT
+<<<<<<< HEAD
 void dest_change(GtkWidget *widget, gpointer user_data)
 {
   g_print("Destination selected.\n");
@@ -127,6 +128,13 @@ void std_change(GtkWidget *widget, gpointer user_data)
 {
   g_print("Standard selected.\n");
 }
+=======
+void dest_changed(GtkWidget *widget, gpointer user_data)
+{
+  g_print("Destination changed...\n");
+}
+
+>>>>>>> 153dfdf (Glade add text to recieve data from combobox.)
 
 GdkPixbuf 
 *create_pixbuf(const gchar *filename)
@@ -203,6 +211,12 @@ int main(int argc, char *argv[])
   
   g_object_bind_property (cmbDest, "active-id",
                           entBusNo, "text",
+                          G_BINDING_BIDIRECTIONAL);
+
+  GtkWidget *entStandard = GTK_WIDGET(gtk_builder_get_object(builder, "entStandard"));
+  GtkWidget *cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
+  g_object_bind_property (cmbStandard, "active-id",
+                          entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
 
   gtk_widget_show_all(GTK_WIDGET(window));
