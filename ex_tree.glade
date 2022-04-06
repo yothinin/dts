@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
   <object class="GtkListStore" id="listDest">
     <columns>
       <!-- column-name dest_code -->
@@ -120,7 +119,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="renderer_dest"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">1</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -133,7 +132,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="renderer_busno"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">2</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -146,7 +145,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="renderer_std"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">3</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -159,7 +158,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="renderer_platform"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">4</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -172,7 +171,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="renderer_note"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">5</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -224,7 +223,7 @@
                     <child>
                       <object class="GtkComboBox" id="cmbDest">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="can-focus">True</property>
                         <property name="model">listDest</property>
                         <property name="wrap-width">1</property>
                         <property name="id-column">0</property>
@@ -266,8 +265,8 @@
                     <child>
                       <object class="GtkEntry" id="entDest">
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can-focus">False</property>
+                        <property name="sensitive">True</property>
+                        <property name="can-focus">True</property>
                         <property name="max-length">10</property>
                         <property name="width-chars">10</property>
                       </object>
@@ -309,9 +308,9 @@
                     <child>
                       <object class="GtkEntry" id="entRoute">
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can-focus">False</property>
-                        <property name="editable">False</property>
+                        <property name="sensitive">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="editable">True</property>
                         <property name="max-length">3</property>
                         <property name="width-chars">3</property>
                       </object>
@@ -423,8 +422,8 @@
                     <child>
                       <object class="GtkEntry" id="entStandard">
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can-focus">False</property>
+                        <property name="sensitive">True</property>
+                        <property name="can-focus">True</property>
                         <property name="max-length">6</property>
                         <property name="width-chars">6</property>
                       </object>

@@ -8,6 +8,7 @@
 #include <mysql.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <glib/gprintf.h>
 //#include "ex_from_glade-res.c"
 
@@ -70,6 +71,7 @@ static Table data[] =
 
 static Standard std[] = 
 {
+  {" ", " "},
   {"11", "ม.1ก"},
   {"12", "ม.1ข"},
   {"13", "ม.1พ"},
@@ -82,6 +84,7 @@ static Standard std[] =
 
 static Destination dest[] = 
 {
+  {" ", " "},
   {"3", "เชียงแสน"},
   {"13", "ลำพูน"},
   {"18", "เชียงใหม่"},
@@ -198,13 +201,32 @@ void btnSaveClicked(GtkWidget *widget, gpointer user_data)
   const gchar *depStandard = gtk_entry_get_text(GTK_ENTRY(entStandard));
   const gchar *depPlatform = gtk_entry_get_text(GTK_ENTRY(entPlatform));
   const gchar *depNote = gtk_entry_get_text(GTK_ENTRY(entNote));
-  
+
   gchar buf_sql[256];
   g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStandard, depPlatform, depNote, "2022-04-06,20:00:00");
 
   db_insert(buf_sql);
   
   g_print("%s\n", buf_sql);
+  
+  gtk_entry_set_text(GTK_ENTRY(entHour), "");
+  gtk_entry_set_text(GTK_ENTRY(entMinute), "");
+  gtk_entry_set_text(GTK_ENTRY(entDest), "");
+  gtk_entry_set_text(GTK_ENTRY(entRoute), "");
+  gtk_entry_set_text(GTK_ENTRY(entBusNo), "");
+  gtk_entry_set_text(GTK_ENTRY(entStandard), "");
+  gtk_entry_set_text(GTK_ENTRY(entPlatform), "");
+  gtk_entry_set_text(GTK_ENTRY(entNote), "");
+
+  GtkWidget *cmbDest;
+  cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(cmbDest), 0);
+
+  GtkWidget *cmbStandard;
+  cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(cmbStandard), 0);
+
+  gtk_widget_grab_focus(cmbDest);
   
 }
 
@@ -231,6 +253,11 @@ gboolean dest_change(GtkWidget *widget, gpointer user_data)
   gtk_combo_box_set_id_column(GTK_COMBO_BOX(cmbDest), 0);
   gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entBusNo));
 
+  gint idx;
+  idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  if (idx == 0)
+    gtk_widget_grab_focus(widget);
+
   g_print("Destination selected.\n");
   return TRUE;
 }
@@ -240,12 +267,13 @@ void std_change(GtkWidget *widget, gpointer user_data)
 {
   GtkWidget *entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
   gtk_entry_grab_focus_without_selecting(GTK_ENTRY(entHour));
-  g_print("Standard selected.\n");
-}
 
-void dest_changed(GtkWidget *widget, gpointer user_data)
-{
-  g_print("Destination changed...\n");
+  gint idx;
+  idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  if (idx == 0)
+    gtk_widget_grab_focus(widget);
+
+  g_print("Standard selected.\n");
 }
 
 GdkPixbuf 
@@ -270,6 +298,11 @@ int main(int argc, char *argv[])
   GObject* window;
   GtkListStore *store, *store_std, *store_dest;
   GtkTreeIter iter, iter2, iter3;
+  
+  gchar home[256];
+  g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
+  g_print("Home: %s\n", home);
+  g_chdir(home);
   
   icon = create_pixbuf("Digital-Signage.png");
 
