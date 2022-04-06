@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.0 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.0"/>
+  <requires lib="gtk+" version="3.24"/>
   <object class="GtkListStore" id="listDest">
     <columns>
       <!-- column-name dest_code -->
@@ -35,17 +35,17 @@
     </columns>
   </object>
   <object class="GtkWindow" id="window">
-    <property name="can_focus">False</property>
-    <property name="border_width">10</property>
+    <property name="can-focus">False</property>
+    <property name="border-width">10</property>
     <property name="title" translatable="yes">DTS - จัดการข้อมูล</property>
-    <property name="window_position">center</property>
-    <property name="default_width">800</property>
-    <property name="default_height">600</property>
+    <property name="window-position">center</property>
+    <property name="default-width">1024</property>
+    <property name="default-height">600</property>
     <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
@@ -53,7 +53,7 @@
         <child>
           <object class="GtkLabel" id="lblSchedule">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="valign">center</property>
             <property name="xpad">15</property>
             <property name="ypad">5</property>
@@ -69,30 +69,30 @@
         <child>
           <object class="GtkBox" id="hbox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="spacing">5</property>
             <property name="homogeneous">True</property>
             <child>
               <object class="GtkBox" id="vboxleft">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_bottom">5</property>
+                <property name="can-focus">False</property>
+                <property name="margin-bottom">5</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">5</property>
                 <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled1">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="shadow_type">in</property>
+                    <property name="shadow-type">in</property>
                     <child>
                       <object class="GtkTreeView" id="treeview1">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
+                        <property name="can-focus">True</property>
                         <property name="model">liststore1</property>
-                        <property name="enable_grid_lines">vertical</property>
+                        <property name="enable-grid-lines">vertical</property>
                         <signal name="button-press-event" handler="treeviewEvent" swapped="no"/>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
@@ -103,7 +103,7 @@
                             <property name="sizing">autosize</property>
                             <property name="title" translatable="yes">เวลา</property>
                             <property name="reorderable">True</property>
-                            <property name="sort_indicator">True</property>
+                            <property name="sort-indicator">True</property>
                             <child>
                               <object class="GtkCellRendererText" id="renderer_time"/>
                               <attributes>
@@ -198,21 +198,21 @@
             <child>
               <object class="GtkBox" id="vboxright">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">ปลายทาง</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -224,10 +224,10 @@
                     <child>
                       <object class="GtkComboBox" id="cmbDest">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="model">listDest</property>
-                        <property name="wrap_width">1</property>
-                        <property name="id_column">0</property>
+                        <property name="wrap-width">1</property>
+                        <property name="id-column">0</property>
                         <signal name="changed" handler="dest_change" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="dest_route"/>
@@ -251,10 +251,10 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">-</property>
-                        <property name="single_line_mode">True</property>
+                        <property name="single-line-mode">True</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -266,9 +266,10 @@
                     <child>
                       <object class="GtkEntry" id="entDest">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">10</property>
-                        <property name="width_chars">10</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="max-length">10</property>
+                        <property name="width-chars">10</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -287,16 +288,16 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">เลขรถ</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -309,10 +310,10 @@
                       <object class="GtkEntry" id="entRoute">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="editable">False</property>
-                        <property name="max_length">3</property>
-                        <property name="width_chars">3</property>
+                        <property name="max-length">3</property>
+                        <property name="width-chars">3</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -323,10 +324,10 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">-</property>
-                        <property name="single_line_mode">True</property>
+                        <property name="single-line-mode">True</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -338,9 +339,9 @@
                     <child>
                       <object class="GtkEntry" id="entBusNo">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">3</property>
-                        <property name="width_chars">3</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-length">3</property>
+                        <property name="width-chars">3</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -359,16 +360,16 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">มาตรฐาน</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -380,10 +381,10 @@
                     <child>
                       <object class="GtkComboBox" id="cmbStandard">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="model">listStandard</property>
-                        <property name="wrap_width">1</property>
-                        <property name="id_column">1</property>
+                        <property name="wrap-width">1</property>
+                        <property name="id-column">1</property>
                         <signal name="changed" handler="std_change" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="std_code"/>
@@ -407,10 +408,10 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">-</property>
-                        <property name="single_line_mode">True</property>
+                        <property name="single-line-mode">True</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -423,9 +424,9 @@
                       <object class="GtkEntry" id="entStandard">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
-                        <property name="can_focus">False</property>
-                        <property name="max_length">6</property>
-                        <property name="width_chars">6</property>
+                        <property name="can-focus">False</property>
+                        <property name="max-length">6</property>
+                        <property name="width-chars">6</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -444,16 +445,16 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">เวลา</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -465,9 +466,9 @@
                     <child>
                       <object class="GtkEntry" id="entHour">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">2</property>
-                        <property name="width_chars">2</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-length">2</property>
+                        <property name="width-chars">2</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -478,10 +479,10 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">:</property>
-                        <property name="single_line_mode">True</property>
+                        <property name="single-line-mode">True</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -493,9 +494,9 @@
                     <child>
                       <object class="GtkEntry" id="entMinute">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">2</property>
-                        <property name="width_chars">2</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-length">2</property>
+                        <property name="width-chars">2</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -514,16 +515,16 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">ชานชาลา</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -535,9 +536,9 @@
                     <child>
                       <object class="GtkEntry" id="entPlatform">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">10</property>
-                        <property name="width_chars">10</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-length">10</property>
+                        <property name="width-chars">10</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -556,16 +557,16 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
                         <property name="label" translatable="yes">หมายเหตุ</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -577,9 +578,9 @@
                     <child>
                       <object class="GtkEntry" id="entNote">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="max_length">30</property>
-                        <property name="width_chars">30</property>
+                        <property name="can-focus">True</property>
+                        <property name="max-length">30</property>
+                        <property name="width-chars">30</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -598,15 +599,15 @@
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <property name="xpad">10</property>
-                        <property name="width_chars">10</property>
+                        <property name="width-chars">10</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -618,10 +619,10 @@
                     <child>
                       <object class="GtkButton" id="btnSave">
                         <property name="label" translatable="yes">บันทึก</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="use-action-appearance">False</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
                         <signal name="clicked" handler="btnSaveClicked" swapped="no"/>
                       </object>
                       <packing>
@@ -634,8 +635,8 @@
                       <object class="GtkButton" id="btnCancel">
                         <property name="label" translatable="yes">ยกเลิก</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
                         <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
                       </object>
                       <packing>
@@ -649,8 +650,8 @@
                       <object class="GtkButton" id="btnDepart">
                         <property name="label" translatable="yes">ปล่อยรถ</property>
                         <property name="sensitive">False</property>
-                        <property name="can_focus">False</property>
-                        <property name="receives_default">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="receives-default">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

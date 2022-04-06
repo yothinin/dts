@@ -106,12 +106,17 @@ db_init()
     g_print("exit code: 1\n");
     exit(1);
   }
+ 
+  if (!mysql_set_character_set(cnx_init, "UTF8")){
+    printf("New client character set: %s\n",
+           mysql_character_set_name(cnx_init));
+  }
 }
 
 void
 db_connect()
 {
-  cnx_db = mysql_real_connect(cnx_init, "localhost", "orangepi", "0rangePi", "dts", 0, NULL, 0);
+  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi", "0rangePi", "dts", 0, NULL, 0);
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
@@ -123,8 +128,22 @@ db_connect()
 }
 
 void
+db_close()
+{
+  mysql_close(cnx_init);
+  g_print("MySQL disconnected.\n");
+}
+
+void
 db_insert(gchar *sql)
 {
+  db_init();
+  db_connect();
+  if (!mysql_set_character_set(cnx_init, "UTF8")){
+    printf("New cslient character set: %s\n",
+           mysql_character_set_name(cnx_init));
+  }
+  
   if (mysql_query(cnx_init, sql) != 0){
     g_print("Failure to insert to database.");
     g_print("Exit code: 3\n");
@@ -132,13 +151,7 @@ db_insert(gchar *sql)
     exit(3);
   }
   g_print("Insert data to mysql completed.\n");
-}
-
-void
-db_close()
-{
-  mysql_close(cnx_init);
-  g_print("MySQL disconnected.\n");
+  db_close();
 }
 
 G_MODULE_EXPORT
@@ -191,7 +204,7 @@ void btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
   db_insert(buf_sql);
   
-  //g_free(buf_sql);
+  g_print("%s\n", buf_sql);
   
 }
 
@@ -317,13 +330,9 @@ int main(int argc, char *argv[])
                           entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
 
-  db_init();
-  db_connect();
-
   gtk_widget_show_all(GTK_WIDGET(window));
 
   gtk_main();
-  db_close();  
 
   return 0;
 }

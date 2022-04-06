@@ -1,4 +1,8 @@
+
+CREATE DATABASE dts CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 USE dts;
+
 DROP TABLE if exists dts_depart;
 CREATE TABLE dts_depart
 (
@@ -11,4 +15,4 @@ CREATE TABLE dts_depart
   dep_note		varchar(20), 
   dep_depart	smallint,
   dep_datetime	datetime
-);
+)ENGINE=MyISAM;
