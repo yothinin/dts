@@ -13,6 +13,15 @@
 //#include "ex_from_glade-res.c"
 
 GtkBuilder* builder;
+GtkWidget *treeview;
+GtkTreeSelection *selection; 
+
+GtkWidget *entHour, *entMinute;
+GtkWidget *entDest, *entRoute, *entBusNo;
+GtkWidget *entStandard;
+GtkWidget *entPlatform;
+GtkWidget *entNote;
+
 MYSQL *cnx_init;
 MYSQL *cnx_db;
 MYSQL_RES *result_set;
@@ -157,6 +166,30 @@ db_insert(gchar *sql)
   db_close();
 }
 
+void setEntry()
+{
+  entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
+  entMinute = GTK_WIDGET(gtk_builder_get_object(builder, "entMinute"));
+  entDest = GTK_WIDGET(gtk_builder_get_object(builder, "entDest"));
+  entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
+  entBusNo = GTK_WIDGET(gtk_builder_get_object(builder, "entBusNo"));
+  entStandard = GTK_WIDGET(gtk_builder_get_object(builder, "entStandard"));
+  entPlatform = GTK_WIDGET(gtk_builder_get_object(builder, "entPlatform"));
+  entNote = GTK_WIDGET(gtk_builder_get_object(builder, "entNote"));
+}
+
+void clearEntry()
+{
+  gtk_entry_set_text(GTK_ENTRY(entHour), "");
+  gtk_entry_set_text(GTK_ENTRY(entMinute), "");
+  gtk_entry_set_text(GTK_ENTRY(entDest), "");
+  gtk_entry_set_text(GTK_ENTRY(entRoute), "");
+  gtk_entry_set_text(GTK_ENTRY(entBusNo), "");
+  gtk_entry_set_text(GTK_ENTRY(entStandard), "");
+  gtk_entry_set_text(GTK_ENTRY(entPlatform), "");
+  gtk_entry_set_text(GTK_ENTRY(entNote), "");
+}
+
 G_MODULE_EXPORT
 void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
@@ -168,6 +201,49 @@ void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata
 
 }
 
+G_MODULE_EXPORT
+void
+onTreeViewRowActivated (GtkTreeView *view,
+                        GtkTreePath *path,
+                        GtkTreeViewColumn *col,
+                        gpointer userdata)
+{
+  // Double-clicked on GtkTreeView //
+  
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
+
+  g_print("signal: row-activated\n");
+
+  GtkTreeIter iter;
+  if (gtk_tree_model_get_iter(model, &iter, path))
+    {
+      char *time;
+
+      gtk_tree_model_get(model, &iter, 0, &time, -1);
+
+      g_print ("The row containing the name '%s' has been double-clicked.\n", time);
+
+      g_free(time);
+    }
+}
+
+//void
+//treeviewSelected(GtkWidget *widget, gpointer selection)
+//{
+  //g_print("Selected...\n");
+  ////GtkListStore *store;
+  //GtkTreeModel *model;
+  //GtkTreeIter  iter;
+
+  ////store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(widget)));
+  //model = gtk_tree_view_get_model(GTK_TREE_VIEW(widget));
+
+  //if (gtk_tree_model_get_iter_first(model, &iter) == FALSE) {
+      //return;
+  //}
+  
+  ////gtk_list_store_clear(store);
+//}
 
 G_MODULE_EXPORT 
 void btnClicked(GtkWidget *widget, gpointer user_data)
@@ -179,20 +255,9 @@ G_MODULE_EXPORT
 void btnSaveClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnSave clicked...\n");
-  GtkWidget *entHour, *entMinute;
-  GtkWidget *entDest, *entRoute, *entBusNo;
-  GtkWidget *entStandard;
-  GtkWidget *entPlatform;
-  GtkWidget *entNote;
-  entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
-  entMinute = GTK_WIDGET(gtk_builder_get_object(builder, "entMinute"));
-  entDest = GTK_WIDGET(gtk_builder_get_object(builder, "entDest"));
-  entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
-  entBusNo = GTK_WIDGET(gtk_builder_get_object(builder, "entBusNo"));
-  entStandard = GTK_WIDGET(gtk_builder_get_object(builder, "entStandard"));
-  entPlatform = GTK_WIDGET(gtk_builder_get_object(builder, "entPlatform"));
-  entNote = GTK_WIDGET(gtk_builder_get_object(builder, "entNote"));
-  
+
+  setEntry();
+
   const gchar *depHour = gtk_entry_get_text(GTK_ENTRY(entHour));
   const gchar *depMinute = gtk_entry_get_text(GTK_ENTRY(entMinute));
   const gchar *depDest = gtk_entry_get_text(GTK_ENTRY(entDest));
@@ -209,15 +274,6 @@ void btnSaveClicked(GtkWidget *widget, gpointer user_data)
   
   g_print("%s\n", buf_sql);
   
-  gtk_entry_set_text(GTK_ENTRY(entHour), "");
-  gtk_entry_set_text(GTK_ENTRY(entMinute), "");
-  gtk_entry_set_text(GTK_ENTRY(entDest), "");
-  gtk_entry_set_text(GTK_ENTRY(entRoute), "");
-  gtk_entry_set_text(GTK_ENTRY(entBusNo), "");
-  gtk_entry_set_text(GTK_ENTRY(entStandard), "");
-  gtk_entry_set_text(GTK_ENTRY(entPlatform), "");
-  gtk_entry_set_text(GTK_ENTRY(entNote), "");
-
   GtkWidget *cmbDest;
   cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbDest), 0);
@@ -276,6 +332,15 @@ void std_change(GtkWidget *widget, gpointer user_data)
   g_print("Standard selected.\n");
 }
 
+G_MODULE_EXPORT
+void btnDepartClicked(GtkWidget *widget, gpointer user_data)
+{
+  g_print("btnDepart clicked.\n");
+
+
+  
+}
+
 GdkPixbuf 
 *create_pixbuf(const gchar *filename)
 {
@@ -325,6 +390,7 @@ int main(int argc, char *argv[])
   window = gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
+  gtk_window_maximize(GTK_WINDOW(window));
 
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
 
@@ -362,8 +428,19 @@ int main(int argc, char *argv[])
   g_object_bind_property (cmbStandard, "active-id",
                           entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
+                          
+  treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
+  g_signal_connect(treeview, "row-activated", G_CALLBACK(onTreeViewRowActivated), NULL);
+
+  /*
+  g_signal_connect(selection, "changed",
+          G_CALLBACK(treeviewSelected), selection);
+  */
 
   gtk_widget_show_all(GTK_WIDGET(window));
+  
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  gtk_tree_selection_unselect_all(selection);  
 
   gtk_main();
 
