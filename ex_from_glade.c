@@ -13,6 +13,7 @@
 //#include "ex_from_glade-res.c"
 
 GtkBuilder* builder;
+GtkWidget *window;
 GtkWidget *treeview;
 GtkTreeSelection *selection; 
 
@@ -217,13 +218,45 @@ onTreeViewRowActivated (GtkTreeView *view,
   GtkTreeIter iter;
   if (gtk_tree_model_get_iter(model, &iter, path))
     {
-      char *time;
-
-      gtk_tree_model_get(model, &iter, 0, &time, -1);
-
-      g_print ("The row containing the name '%s' has been double-clicked.\n", time);
-
+      gchar *time;
+      gchar *dest;
+      gchar *busno;
+      gchar *standard;
+      gchar *platform;
+      gchar *note;
+      
+      gtk_tree_model_get(model, &iter, 
+        0, &time, 1, &dest, 2, &busno, 3, &standard, 4, &platform, 5, &note, 
+        -1);
+      
+      entHour = (GtkWidget*)gtk_builder_get_object(builder, "entHour");
+      entMinute = (GtkWidget*)gtk_builder_get_object(builder, "entMinute");
+      entDest = (GtkWidget*)gtk_builder_get_object(builder, "entDest");
+      entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+      entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+      entStandard = (GtkWidget*)gtk_builder_get_object(builder, "entStandard");
+      entPlatform = (GtkWidget*)gtk_builder_get_object(builder, "entPlatform");
+      entNote = (GtkWidget*)gtk_builder_get_object(builder, "entNote");
+      
+      gchar **arrTime = g_strsplit(time, ":", 0);
+      gchar **arrBusNo = g_strsplit(busno, "-", 0);
+      
+      gtk_entry_set_text(GTK_ENTRY(entHour), arrTime[0]);
+      gtk_entry_set_text(GTK_ENTRY(entMinute), arrTime[1]);
+      gtk_entry_set_text(GTK_ENTRY(entDest), dest);
+      gtk_entry_set_text(GTK_ENTRY(entRoute), arrBusNo[0]);
+      gtk_entry_set_text(GTK_ENTRY(entBusNo), arrBusNo[1]);
+      gtk_entry_set_text(GTK_ENTRY(entStandard), standard);
+      gtk_entry_set_text(GTK_ENTRY(entPlatform), platform);
+      gtk_entry_set_text(GTK_ENTRY(entNote), note);
+        
+      g_print ("The row containing the time is '%s' has been double-clicked.\n", time);
       g_free(time);
+      g_free(dest);
+      g_free(busno);
+      g_free(standard);
+      g_free(platform);
+      g_free(note);
     }
 }
 
@@ -332,13 +365,55 @@ void std_change(GtkWidget *widget, gpointer user_data)
   g_print("Standard selected.\n");
 }
 
+void depart_selected(GtkWidget *widget, gpointer user_data)
+{
+  g_print("ยืนยันปล่อยรถเที่ยวเวลา: %s\n", (gchar*)user_data);
+}
+
 G_MODULE_EXPORT
 void btnDepartClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnDepart clicked.\n");
-
-
+ 
+  GtkTreeModel *model;
+  GtkTreeIter iter;
   
+  gchar *time = 0L;
+  gchar *busno = 0L;
+  gchar *dest = 0L;
+  gchar msg[256];
+  if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(user_data), &model, &iter)){
+    gtk_tree_model_get(model, &iter, 0, &time, -1);
+    gtk_tree_model_get(model, &iter, 1, &dest, -1);
+    gtk_tree_model_get(model, &iter, 2, &busno, -1);
+    g_print ("ผู้ใช้คลิกปล่อยรถ: %s\n", time);
+  }
+
+  if (time != 0L){
+    GtkWidget *dialog;
+
+    g_sprintf(msg, "กรุณายืนยันปล่อยรถเที่ยวเวลา: %s\n\t\tปลายทาง: %s\n\t\tหมายเลขรถ: %s", time, dest, busno);
+  
+    dialog = gtk_message_dialog_new (GTK_WINDOW (window),
+                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                     GTK_MESSAGE_INFO,
+                                     GTK_BUTTONS_OK_CANCEL,
+                                     msg);
+    //gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+    //                                          "%d", i);
+    gtk_window_set_title((GtkWindow *)dialog, "ยืนยันปล่อยรถ");
+    int response = gtk_dialog_run (GTK_DIALOG (dialog));
+    g_print("response was %d (OK=%d, CANCEL = %d)\n", response, GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL);
+
+    if (response == GTK_RESPONSE_OK){
+      gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
+    }
+
+    gtk_widget_destroy (dialog);
+  }
+  g_free(time);
+  g_free(dest);
+  g_free(busno);
 }
 
 GdkPixbuf 
@@ -360,7 +435,7 @@ int main(int argc, char *argv[])
 
   GdkPixbuf *icon;
   GSList *lst, *objList;
-  GObject* window;
+  //GObject* window;
   GtkListStore *store, *store_std, *store_dest;
   GtkTreeIter iter, iter2, iter3;
   
@@ -387,7 +462,7 @@ int main(int argc, char *argv[])
       g_print("%p\n", (char*)(lst->data));
     }
 
-  window = gtk_builder_get_object(builder, "window");
+  window = (GtkWidget*)gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
   gtk_window_maximize(GTK_WINDOW(window));
