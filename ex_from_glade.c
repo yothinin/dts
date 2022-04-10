@@ -591,7 +591,7 @@ int main(int argc, char *argv[])
                           G_BINDING_BIDIRECTIONAL);
 
   treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
-  g_signal_connect(treeview, "button-press-event", G_CALLBACK(treeviewEvent), NULL);
+  //g_signal_connect(treeview, "button-press-event", G_CALLBACK(treeviewEvent), NULL);
   //g_signal_connect(treeview, "row-activated", G_CALLBACK(onTreeViewRowActivated), NULL);
 
   /*
