@@ -1,33 +1,93 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
+#include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gprintf.h>
+#include <mysql.h>
+#include <gdk/gdk.h>
 #include "dts_functions.h"
+
+  GtkWidget *win=NULL;
+
+  // Read file dts.conf to setup color, font and font size.
+  gchar *BG_IMAGE;
+  gchar *TITLE_TEXT;
+  gchar *TITLE_FONT;
+  gint TITLE_SIZE;
+  gchar *HEADER_COLOR;
+  gchar *CONTENT_COLOR;
+  gchar *FONT_SIZE_F;
+  gint FONT_SIZE;
 
 typedef struct
 {
-  const gchar 		*time;
-  const gchar		*dest;
-  const gchar		*busno;
-  const gchar		*standard;
-  const gchar		*platform;
-  const gchar		*note;
+  const gchar 	  *time;
+  const gchar		  *dest;
+  const gchar		  *busno;
+  const gchar		  *standard;
+  const gchar		  *platform;
+  const gchar		  *note;
   const gboolean	out;
-  const gchar		*objname;
+  const gchar		  *objname;
 }
 Table;
 
-static Table data[] =
+//static Table data[] =
+//{
+  //{"17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
+  //{"17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
+  //{"18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "", FALSE},
+  //{"18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
+  //{"18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
+  //{"19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
+  //{"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
+  //{"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
+  //{"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
+//};
+
+
+MYSQL *cnx_init;
+MYSQL *cnx_db;
+MYSQL_RES *result_set;
+MYSQL_ROW row;
+
+void
+db_init()
 {
-  {"17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
-  {"17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
-  {"18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "", FALSE},
-  {"18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
-  {"18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
-  {"19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
-  {"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
-  {"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
-  {"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
-};
+  g_print("Start connect to sql...\n");
+  cnx_init = mysql_init(NULL);
+  if (cnx_init == NULL){
+    g_print("connect failed in mysql_init, \n");
+    g_print("exit code: 1\n");
+    exit(1);
+  }
+
+  //if (!mysql_set_character_set(cnx_init, "UTF8")){
+    //printf("New client character set: %s\n",
+           //mysql_character_set_name(cnx_init));
+  //}
+}
+
+void
+db_connect()
+{
+  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi", "0rangePi", "dts", 0, NULL, 0);
+  if (cnx_db == NULL){
+    g_print("MySQL failure to connect to database...\n");
+    g_print("Exit code: 2\n");
+    g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    exit(2);
+  }
+
+  g_print("Database connected.\n");
+}
+
+void
+db_close()
+{
+  mysql_close(cnx_init);
+  g_print("MySQL disconnected.\n");
+}
 
 static gboolean
 update_time(GtkWidget *label)
@@ -45,13 +105,62 @@ update_time(GtkWidget *label)
   return TRUE;
 }
 
+static gboolean
+displayLabel (GtkWidget *widget)
+{
+  
+  db_init();
+  db_connect();
+
+  mysql_query(cnx_init, "SET character_set_results='utf8'");
+
+  gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'IN' WHEN dep_depart = 2 THEN 'OUT' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
+  
+  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
+  
+  //g_sprintf(sql_buf, "select dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note from dts_depart where date(dep_datetime) = '%s' and dep_depart <> 1 order by dep_time", curDate);
+
+  if (mysql_query(cnx_init, sql_buf) != 0L){
+    g_print("query error... \n");
+    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    exit(1);
+  }
+  
+  // Add data from mysql to GtkListStore, store //  
+  result_set = mysql_store_result(cnx_init);
+  
+  gtk_container_foreach(GTK_CONTAINER(widget), (void*) gtk_widget_destroy, NULL);
+
+  GtkWidget *lbl=NULL;
+  GtkWidget *hbox_c;
+
+  while ((row = mysql_fetch_row(result_set)) != 0L){
+    hbox_c = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
+
+    set_label(hbox_c, lbl, 5, row[0], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 10, row[1], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 7, row[2], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 8, row[3], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 7, row[4], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 15, row[5], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    
+  }
+  gtk_widget_show_all(win);
+  g_print("%s\n", sql_buf);
+  //g_free(sql_buf);
+  db_close();
+
+
+  return TRUE;
+}
+
 int main(int argc, char *argv[]){
 
-  GtkWidget *win=NULL;
   GdkPixbuf *icon;
-  GtkWidget *vbox;
+  GtkWidget *vbox, *vbox_c;
   GtkWidget *hbox;
-  GtkWidget *hbox_c[9];
+  //GtkWidget *hbox_c[9];
   GtkWidget *lblDateTime;
   GtkWidget *lblName = NULL;
   GtkWidget *lblHeader = NULL;
@@ -63,7 +172,7 @@ int main(int argc, char *argv[]){
   GtkStyle *style = NULL;
   GdkColor NameColor;
   
-  gchar *home[256];
+  gchar home[256];
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
@@ -71,15 +180,15 @@ int main(int argc, char *argv[]){
   gtk_init(&argc, &argv);
   
   // Read file dts.conf to setup color, font and font size.
-  gchar *BG_IMAGE = config_get_string("dts.conf", "Images", "BG_IMAGE");
-  gchar *TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
-  gchar *TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
-  gint TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
-  gchar *HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
-  gchar *CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
-  gchar *FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
-  gint FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
-  g_free(FONT_SIZE_F);
+  BG_IMAGE = config_get_string("dts.conf", "Images", "BG_IMAGE");
+  TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
+  TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
+  TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
+  HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
+  CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
+  FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
+  FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
+  //g_free(FONT_SIZE_F);
 
   image = load_pixbuf_from_file (BG_IMAGE);
   gdk_pixbuf_render_pixmap_and_mask (image, &background, NULL, 0);
@@ -134,27 +243,24 @@ int main(int argc, char *argv[]){
   set_label(hbox, lblHeader, 7, "เลขรถ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
   set_label(hbox, lblHeader, 8, "มาตรฐาน", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
   set_label(hbox, lblHeader, 7, "ชานชาลา", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
-  set_label(hbox, lblHeader, 15, "หมายเหตุ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
-  //
+  set_label(hbox, lblHeader, 15, "สถานะ", FONT_SIZE, HEADER_COLOR, TRUE, TRUE);
 
-  int i;
-  /* add data to the list store */
-  //for (i = 0; i < G_N_ELEMENTS (data); i++){
-  for (i = 0; i < 9; ++i){
-    GtkWidget *lbl=NULL;
-    
-    hbox_c[i] = gtk_hbox_new(FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox_c[i], FALSE, FALSE, 0);
-    set_label(hbox_c[i], lbl, 5, data[i].time, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox_c[i], lbl, 10, data[i].dest, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox_c[i], lbl, 7, data[i].busno, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE); 
-    set_label(hbox_c[i], lbl, 8, data[i].standard, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);    
-    set_label(hbox_c[i], lbl, 7, data[i].platform, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
-    set_label(hbox_c[i], lbl, 15, data[i].note, FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);     
-  }
-
+  vbox_c = gtk_vbox_new(FALSE, 1);
+  gtk_box_pack_start(GTK_BOX(vbox), vbox_c, FALSE, FALSE,0);
+  
+  displayLabel(vbox_c);
+  
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
+  g_timeout_add (15000, (GSourceFunc)displayLabel, vbox_c);
+
   g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  gtk_widget_realize(win);
+
+  GdkCursor *cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
+  GdkWindow *w = gtk_widget_get_window(GTK_WIDGET(win));
+  if (w != NULL)
+    gdk_window_set_cursor(w, cursor);
 
   gtk_widget_show_all(win);
   gtk_main();

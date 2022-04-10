@@ -724,7 +724,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkButton" id="btnDepart">
-                <property name="label" translatable="yes">ปล่อยรถ</property>
+                <property name="label" translatable="yes">รถเข้าชานชาลา</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
