@@ -71,7 +71,7 @@ db_init()
 void
 db_connect()
 {
-  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi", "0rangePi", "dts", 0, NULL, 0);
+  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi_r", "0rangePi", "dts", 0, NULL, 0);
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
