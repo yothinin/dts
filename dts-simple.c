@@ -10,6 +10,7 @@
   GtkWidget *win=NULL;
 
   // Read file dts.conf to setup color, font and font size.
+  gchar *SERVER;
   gchar *BG_IMAGE;
   gchar *TITLE_TEXT;
   gchar *TITLE_FONT;
@@ -59,27 +60,34 @@ db_init()
   if (cnx_init == NULL){
     g_print("connect failed in mysql_init, \n");
     g_print("exit code: 1\n");
-    exit(1);
+    //exit(1);
+  }else{
+    my_bool reconnect = 0;
+    unsigned int timeout = 1;
+    mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
+    mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    
+    if (mysql_set_character_set(cnx_init, "utf8") == 0)
+      printf("New client character set: %s\n",
+             mysql_character_set_name(cnx_init));
+    else
+      g_print("Setting character failed...\n");
   }
-
-  //if (!mysql_set_character_set(cnx_init, "UTF8")){
-    //printf("New client character set: %s\n",
-           //mysql_character_set_name(cnx_init));
-  //}
 }
 
 void
 db_connect()
 {
-  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi_r", "0rangePi", "dts", 0, NULL, 0);
+  static int i;
+  cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 0, NULL, 0);
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
     g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    exit(2);
-  }
-
-  g_print("Database connected.\n");
+    //exit(2);
+      
+  }else
+    g_print("Database connected. (%d)\n", i);
 }
 
 void
@@ -123,7 +131,7 @@ displayLabel (GtkWidget *widget)
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    exit(1);
+    //exit(1);
   }
   
   // Add data from mysql to GtkListStore, store //  
@@ -147,8 +155,9 @@ displayLabel (GtkWidget *widget)
     
   }
   gtk_widget_show_all(win);
-  g_print("%s\n", sql_buf);
+  g_print("Server: %s,\n%s\n", SERVER, sql_buf);
   //g_free(sql_buf);
+  mysql_free_result(result_set);
   db_close();
 
 
@@ -180,6 +189,7 @@ int main(int argc, char *argv[]){
   gtk_init(&argc, &argv);
   
   // Read file dts.conf to setup color, font and font size.
+  SERVER = config_get_string("dts.conf", "Server", "SERVER");
   BG_IMAGE = config_get_string("dts.conf", "Images", "BG_IMAGE");
   TITLE_TEXT = config_get_string("dts.conf", "Title", "TITLE_TEXT");
   TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
