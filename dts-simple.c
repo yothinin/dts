@@ -79,7 +79,7 @@ void
 db_connect()
 {
   static int i;
-  cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 0, NULL, 0);
+  cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
@@ -87,7 +87,7 @@ db_connect()
     //exit(2);
       
   }else
-    g_print("Database connected. (%d)\n", i);
+    g_print("Database connected. (%d)\n", ++i);
 }
 
 void
