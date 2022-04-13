@@ -7,6 +7,8 @@
 #include <gdk/gdk.h>
 #include "dts_functions.h"
 
+  gint threadID = 0;
+
   GtkWidget *win=NULL;
 
   // Read file dts.conf to setup color, font and font size.
@@ -62,32 +64,38 @@ db_init()
     g_print("exit code: 1\n");
     //exit(1);
   }else{
-    my_bool reconnect = 0;
-    unsigned int timeout = 1;
+    my_bool reconnect = 1;
+    unsigned int timeout = 5;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
     
-    if (mysql_set_character_set(cnx_init, "utf8") == 0)
-      printf("New client character set: %s\n",
-             mysql_character_set_name(cnx_init));
-    else
-      g_print("Setting character failed...\n");
+    //if (mysql_set_character_set(cnx_init, "utf8") == 0)
+      //printf("New client character set: %s\n",
+             //mysql_character_set_name(cnx_init));
+    //else
+      //g_print("Setting character failed...\n");
   }
 }
 
 void
 db_connect()
 {
-  static int i;
-  cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
-  if (cnx_db == NULL){
-    g_print("MySQL failure to connect to database...\n");
-    g_print("Exit code: 2\n");
-    g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    //exit(2);
+  int i = 0;
+  
+  do {
+    g_print("LOST CONNECTION...(%d)\n", i++);
+    cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
+  } while (cnx_db == NULL);
+  
+  //cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
+  //if (cnx_db == NULL){
+    //g_print("MySQL failure to connect to database...\n");
+    //g_print("Exit code: 2\n");
+    //g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    ////exit(2);
       
-  }else
-    g_print("Database connected. (%d)\n", ++i);
+  //}else
+    //g_print("Database connected. (%d)\n", ++i);
 }
 
 void
@@ -116,7 +124,8 @@ update_time(GtkWidget *label)
 static gboolean
 displayLabel (GtkWidget *widget)
 {
-  
+  g_source_remove(threadID);
+ 
   db_init();
   db_connect();
 
@@ -124,10 +133,6 @@ displayLabel (GtkWidget *widget)
 
   gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'IN' WHEN dep_depart = 2 THEN 'OUT' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
   
-  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
-  
-  //g_sprintf(sql_buf, "select dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note from dts_depart where date(dep_datetime) = '%s' and dep_depart <> 1 order by dep_time", curDate);
-
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
@@ -145,21 +150,20 @@ displayLabel (GtkWidget *widget)
   while ((row = mysql_fetch_row(result_set)) != 0L){
     hbox_c = gtk_hbox_new(FALSE, 5);
     gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
-
     set_label(hbox_c, lbl, 5, row[0], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 10, row[1], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 7, row[2], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 8, row[3], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 7, row[4], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 15, row[5], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    
   }
+
   gtk_widget_show_all(win);
   g_print("Server: %s,\n%s\n", SERVER, sql_buf);
-  //g_free(sql_buf);
   mysql_free_result(result_set);
   db_close();
 
+  threadID = g_timeout_add (15000, (GSourceFunc)displayLabel, widget);
 
   return TRUE;
 }
@@ -258,10 +262,10 @@ int main(int argc, char *argv[]){
   vbox_c = gtk_vbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(vbox), vbox_c, FALSE, FALSE,0);
   
-  displayLabel(vbox_c);
+  //displayLabel(vbox_c);
   
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
-  g_timeout_add (15000, (GSourceFunc)displayLabel, vbox_c);
+  threadID = g_timeout_add (5000, (GSourceFunc)displayLabel, vbox_c);
 
   g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
