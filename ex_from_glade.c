@@ -18,6 +18,7 @@ GtkWidget *window;
 GtkWidget *treeview;
 GtkTreeSelection *selection;
 
+GtkWidget *entID;
 GtkWidget *entHour, *entMinute;
 GtkWidget *entDest, *entRoute, *entBusNo;
 GtkWidget *entStandard;
@@ -60,6 +61,7 @@ Destination;
 
 enum
 {
+  COL_ID,
   COL_TIME,
   COL_DEST,
   COL_BUSNO,
@@ -119,7 +121,7 @@ db_init()
 void
 db_connect()
 {
-  cnx_db = mysql_real_connect(cnx_init, "dts.bustecz.com", "orangepi_w", "0rangePi", "dts", 0, NULL, 0);
+  cnx_db = mysql_real_connect(cnx_init, "203.154.232.29", "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
@@ -151,6 +153,7 @@ db_insert(gchar *sql)
     g_print("Failure to insert to database.");
     g_print("Exit code: 3\n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    g_print("%s\n", sql);
     exit(3);
   }
   g_print("Insert data to mysql completed.\n");
@@ -173,6 +176,7 @@ void setEntry()
 void clearEntry()
 {
   g_print("clearEntry()\n");
+  gtk_entry_set_text(GTK_ENTRY(entID), "**********");
   gtk_entry_set_text(GTK_ENTRY(entHour), "");
   gtk_entry_set_text(GTK_ENTRY(entMinute), "");
   gtk_entry_set_text(GTK_ENTRY(entDest), " ");
@@ -280,6 +284,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
   g_print("signal: row-activated\n");
 
   if (gtk_tree_model_get_iter(model, &iter, path)){
+    gchar *id;
     gchar *time;
     gchar *dest;
     gchar *busno;
@@ -288,9 +293,10 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gchar *note;
 
     gtk_tree_model_get(model, &iter,
-	  0, &time, 1, &dest, 2, &busno, 3, &standard, 4, &platform, 5, &note,
+	  0, &id, 1, &time, 2, &dest, 3, &busno, 4, &standard, 5, &platform, 6, &note,
       -1);
 
+    entID = (GtkWidget*)gtk_builder_get_object(builder, "entID");
     entHour = (GtkWidget*)gtk_builder_get_object(builder, "entHour");
     entMinute = (GtkWidget*)gtk_builder_get_object(builder, "entMinute");
     entDest = (GtkWidget*)gtk_builder_get_object(builder, "entDest");
@@ -303,6 +309,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gchar **arrTime = g_strsplit(time, ":", 0);
     gchar **arrBusNo = g_strsplit(busno, "-", 0);
 
+    gtk_entry_set_text(GTK_ENTRY(entID), id);
     gtk_entry_set_text(GTK_ENTRY(entHour), arrTime[0]);
     gtk_entry_set_text(GTK_ENTRY(entMinute), arrTime[1]);
     gtk_entry_set_text(GTK_ENTRY(entDest), dest);
@@ -318,6 +325,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     dts_mode = 1;
 
     g_print ("The row containing the time is '%s' has been clicked.\n", time);
+    g_free(id);
     g_free(time);
     g_free(dest);
     g_free(busno);
@@ -341,7 +349,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   g_print("btnSave clicked...\n");
 
   GDateTime *now = g_date_time_new_now_local();
-  gchar *curTime = g_date_time_format(now, "%Y-%m-%d, %H:%M:%S");
+  gchar *curTime = g_date_time_format(now, "%Y-%m-%d %H:%M:%S");
 
   setEntry();
 
@@ -531,7 +539,7 @@ int main(int argc, char *argv[])
   window = (GtkWidget*)gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
-  gtk_window_maximize(GTK_WINDOW(window));
+  //gtk_window_maximize(GTK_WINDOW(window));
 
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
 
@@ -540,7 +548,7 @@ int main(int argc, char *argv[])
 
   mysql_query(cnx_init, "SET character_set_results='utf8'");
 
-  gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
+  gchar *sql_buf = "SELECT id, dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
   
   //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
   

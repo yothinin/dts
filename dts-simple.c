@@ -64,7 +64,7 @@ db_init()
     g_print("exit code: 1\n");
     //exit(1);
   }else{
-    my_bool reconnect = 1;
+    bool reconnect = 1;
     unsigned int timeout = 5;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);

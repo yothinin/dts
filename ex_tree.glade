@@ -20,6 +20,8 @@
   </object>
   <object class="GtkListStore" id="liststore1">
     <columns>
+      <!-- column-name col_id -->
+      <column type="gchararray"/>
       <!-- column-name col_time -->
       <column type="gchararray"/>
       <!-- column-name col_dest -->
@@ -39,8 +41,8 @@
     <property name="border-width">10</property>
     <property name="title" translatable="yes">DTS - จัดการข้อมูล</property>
     <property name="window-position">center</property>
-    <property name="default-width">1024</property>
-    <property name="default-height">600</property>
+    <property name="default-width">1200</property>
+    <property name="default-height">700</property>
     <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkBox" id="vbox">
@@ -51,23 +53,102 @@
         <property name="orientation">vertical</property>
         <property name="spacing">5</property>
         <child>
-          <object class="GtkLabel" id="lblSchedule">
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="valign">center</property>
-            <property name="xpad">15</property>
-            <property name="ypad">5</property>
-            <property name="label" translatable="yes">ตารางเวลารถออก</property>
-            <property name="xalign">0</property>
+            <child>
+              <object class="GtkLabel" id="lblSchedule">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="valign">center</property>
+                <property name="xpad">15</property>
+                <property name="ypad">5</property>
+                <property name="label" translatable="yes">ตารางเวลารถออก</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="btnBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">รถเข้า</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="padding">5</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label" translatable="yes">รถออก</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="padding">5</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="width-chars">5</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="btnDepart">
+                    <property name="label" translatable="yes">ข้อมูลใหม่</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="btnDepartClicked" object="selection" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="pack-type">end</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="hbox">
+          <object class="GtkBox" id="hbox_content">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="spacing">5</property>
@@ -98,16 +179,33 @@
                           <object class="GtkTreeSelection" id="selection"/>
                         </child>
                         <child>
+                          <object class="GtkTreeViewColumn" id="col_id">
+                            <property name="spacing">10</property>
+                            <property name="sizing">autosize</property>
+                            <property name="title" translatable="yes">#ID</property>
+                            <property name="reorderable">True</property>
+                            <property name="sort-indicator">True</property>
+                            <property name="sort-column-id">0</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="renderer_id"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkTreeViewColumn" id="col_time">
                             <property name="spacing">10</property>
                             <property name="sizing">autosize</property>
                             <property name="title" translatable="yes">เวลา</property>
                             <property name="reorderable">True</property>
                             <property name="sort-indicator">True</property>
+                            <property name="sort-column-id">1</property>
                             <child>
                               <object class="GtkCellRendererText" id="renderer_time"/>
                               <attributes>
-                                <attribute name="text">0</attribute>
+                                <attribute name="text">1</attribute>
                               </attributes>
                             </child>
                           </object>
@@ -201,7 +299,48 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="idbox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="xpad">10</property>
+                        <property name="label" translatable="yes">#ID</property>
+                        <property name="width-chars">10</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="entID">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="editable">False</property>
+                        <property name="max-length">10</property>
+                        <property name="width-chars">10</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="dest">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -281,11 +420,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="busno">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -339,6 +478,7 @@
                         <property name="can-focus">True</property>
                         <property name="max-length">3</property>
                         <property name="width-chars">3</property>
+                        <property name="input-purpose">number</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -351,11 +491,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="standard">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -435,11 +575,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="time">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -505,11 +645,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="platform">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -547,11 +687,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">4</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="note">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -589,11 +729,11 @@
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">3</property>
-                    <property name="position">5</property>
+                    <property name="position">6</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="button">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
@@ -642,26 +782,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="btnCancel">
-                        <property name="label" translatable="yes">ยกเลิก</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">15</property>
-                        <property name="position">3</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
                     <property name="padding">15</property>
-                    <property name="position">6</property>
+                    <property name="position">7</property>
                   </packing>
                 </child>
               </object>
@@ -682,14 +810,39 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkBox" id="text">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="xpad">10</property>
-                <property name="label" translatable="yes">คลิกที่ตารางเพื่อเลือกเที่ยวที่จะปล่อยรถ แล้วคลิกปุ่ม ปล่อยรถ ด้านล่างนี้</property>
-                <property name="xalign">0</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">10</property>
+                    <property name="label" translatable="yes">รถเข้า ให้คลิกที่ตาราง แล้วคลิกปุ่ม รถเข้า</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">9</property>
+                    <property name="label" translatable="yes">ปล่อยรถ ให้คลิกที่ตาราง แล้วคลิกปุ่ม รถออก</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -698,16 +851,17 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkButton" id="btnCancel">
+                <property name="label" translatable="yes"> ออกจากโปรแกรม</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="xpad">9</property>
-                <property name="label" translatable="yes">หรือดับเบิลคลิกที่รายการเพื่อแก้ไข แล้วแก้ไขข้อมูลในช่องด้านขวามือ</property>
-                <property name="xalign">0</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">True</property>
+                <property name="fill">False</property>
+                <property name="pack-type">end</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -716,35 +870,6 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <child>
-              <object class="GtkButton" id="btnDepart">
-                <property name="label" translatable="yes">รถเข้าชานชาลา</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="btnDepartClicked" object="selection" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="padding">10</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
           </packing>
         </child>
       </object>
