@@ -3,7 +3,6 @@
 // Note: This file must be compiled with the linker flags emitted by
 // $(pkg-config gmodule-2.0) so that the dynamic loader can find the
 // signal handler at runtime. See the Makefile for implementation.
-
 #include <gtk/gtk.h>
 #include <mysql.h>
 #include <stdlib.h>

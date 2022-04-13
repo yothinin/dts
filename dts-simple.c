@@ -93,7 +93,6 @@ db_connect()
     //g_print("Exit code: 2\n");
     //g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
     ////exit(2);
-      
   //}else
     //g_print("Database connected. (%d)\n", ++i);
 }
