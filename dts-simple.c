@@ -68,7 +68,7 @@ db_init()
     LOG(ERROR, "Initialize failed.");
     exit(1);
   }else{
-    bool reconnect = 1;
+    my_bool reconnect = 1;
     unsigned int timeout = 5;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
