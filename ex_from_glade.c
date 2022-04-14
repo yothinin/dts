@@ -3,6 +3,7 @@
 // Note: This file must be compiled with the linker flags emitted by
 // $(pkg-config gmodule-2.0) so that the dynamic loader can find the
 // signal handler at runtime. See the Makefile for implementation.
+#include <stdio.h>
 #include <gtk/gtk.h>
 #include <mysql.h>
 #include <stdlib.h>
@@ -10,6 +11,10 @@
 #include <glib/gstdio.h>
 #include <glib/gprintf.h>
 #include "dts.h"
+
+FILE *fp;
+#define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
+
 //#include "ex_from_glade-res.c"
 
 GtkBuilder* builder;
@@ -17,7 +22,6 @@ GtkWidget *window;
 GtkWidget *treeview;
 GtkTreeSelection *selection;
 
-GtkWidget *entID;
 GtkWidget *entHour, *entMinute;
 GtkWidget *entDest, *entRoute, *entBusNo;
 GtkWidget *entStandard;
@@ -34,10 +38,10 @@ MYSQL_ROW row;
 
 typedef struct
 {
-  const gchar    *time;
-  const gchar    *dest;
   const gchar    *busno;
+  const gchar    *dest;
   const gchar    *standard;
+  const gchar    *time;
   const gchar    *platform;
   const gchar    *note;
   const gboolean out;
@@ -61,11 +65,10 @@ Destination;
 
 enum
 {
-  COL_ID,
-  COL_TIME,
-  COL_DEST,
   COL_BUSNO,
+  COL_DEST,
   COL_STANDARD,
+  COL_TIME,
   COL_PLATFORM,
   COL_NOTE,
   NUM_COLUMNS
@@ -182,6 +185,7 @@ db_insert(gchar *sql)
     g_print("Exit code: 3\n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
     g_print("%s\n", sql);
+    LOG(ERROR, "Failure to insert to database. (3)");
     exit(3);
   }
   g_print("Insert data to mysql completed.\n");
@@ -191,7 +195,6 @@ db_insert(gchar *sql)
 void setEntry()
 {
   g_print("setEntry()\n");
-  entID = GTK_WIDGET(gtk_builder_get_object(builder, "entID"));
   entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
   entMinute = GTK_WIDGET(gtk_builder_get_object(builder, "entMinute"));
   entDest = GTK_WIDGET(gtk_builder_get_object(builder, "entDest"));
@@ -205,7 +208,6 @@ void setEntry()
 void clearEntry()
 {
   g_print("clearEntry()\n");
-  gtk_entry_set_text(GTK_ENTRY(entID), "***");
   gtk_entry_set_text(GTK_ENTRY(entHour), "");
   gtk_entry_set_text(GTK_ENTRY(entMinute), "");
   gtk_entry_set_text(GTK_ENTRY(entDest), " ");
@@ -241,7 +243,7 @@ void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata
   g_print("treeviewEvent()\n");
   if (event->type == GDK_BUTTON_PRESS && event->button == 3){
     g_print("treeviewEvent: right click...\n");
-    btnDepartClicked(treeview, NULL);
+    btnNewClicked(treeview, NULL);
 
   }
 
@@ -317,7 +319,6 @@ treeviewSelected(GtkWidget *widget, gpointer view)
   g_print("signal: row-activated\n");
 
   if (gtk_tree_model_get_iter(model, &iter, path)){
-    gchar *id;
     gchar *time;
     gchar *dest;
     gchar *busno;
@@ -326,29 +327,27 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gchar *note;
 
     gtk_tree_model_get(model, &iter,
-	  0, &id, 1, &time, 2, &dest, 3, &busno, 4, &standard, 5, &platform, 6, &note,
+	  COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_NOTE, &note,
       -1);
 
-    entID = (GtkWidget*)gtk_builder_get_object(builder, "entID");
-    entHour = (GtkWidget*)gtk_builder_get_object(builder, "entHour");
-    entMinute = (GtkWidget*)gtk_builder_get_object(builder, "entMinute");
-    entDest = (GtkWidget*)gtk_builder_get_object(builder, "entDest");
     entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
     entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+    entDest = (GtkWidget*)gtk_builder_get_object(builder, "entDest");
     entStandard = (GtkWidget*)gtk_builder_get_object(builder, "entStandard");
+    entHour = (GtkWidget*)gtk_builder_get_object(builder, "entHour");
+    entMinute = (GtkWidget*)gtk_builder_get_object(builder, "entMinute");
     entPlatform = (GtkWidget*)gtk_builder_get_object(builder, "entPlatform");
     entNote = (GtkWidget*)gtk_builder_get_object(builder, "entNote");
 
-    gchar **arrTime = g_strsplit(time, ":", 0);
     gchar **arrBusNo = g_strsplit(busno, "-", 0);
+    gchar **arrTime = g_strsplit(time, ":", 0);
 
-    gtk_entry_set_text(GTK_ENTRY(entID), id);
-    gtk_entry_set_text(GTK_ENTRY(entHour), arrTime[0]);
-    gtk_entry_set_text(GTK_ENTRY(entMinute), arrTime[1]);
-    gtk_entry_set_text(GTK_ENTRY(entDest), dest);
     gtk_entry_set_text(GTK_ENTRY(entRoute), arrBusNo[0]);
     gtk_entry_set_text(GTK_ENTRY(entBusNo), arrBusNo[1]);
+    gtk_entry_set_text(GTK_ENTRY(entDest), dest);
     gtk_entry_set_text(GTK_ENTRY(entStandard), standard);
+    gtk_entry_set_text(GTK_ENTRY(entHour), arrTime[0]);
+    gtk_entry_set_text(GTK_ENTRY(entMinute), arrTime[1]);
     gtk_entry_set_text(GTK_ENTRY(entPlatform), platform);
     gtk_entry_set_text(GTK_ENTRY(entNote), note);
 
@@ -358,15 +357,26 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     dts_mode = 1;
 
     g_print ("The row containing the time is '%s' has been clicked.\n", time);
-    g_free(id);
-    g_free(time);
-    g_free(dest);
     g_free(busno);
+    g_free(dest);
     g_free(standard);
+    g_free(time);
     g_free(platform);
     g_free(note);
-    g_strfreev(arrTime);
     g_strfreev(arrBusNo);
+    g_strfreev(arrTime);
+
+    GtkWidget *entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
+    GtkWidget *btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
+    GtkWidget *btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
+    GtkWidget *btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
+
+    gtk_widget_set_sensitive(btnArrive, TRUE);
+    gtk_widget_set_sensitive(btnDepart, TRUE);
+    gtk_widget_set_sensitive(btnDelete, TRUE);
+    gtk_widget_grab_focus(entHour);
+
+    
   }
 }
 
@@ -408,7 +418,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
     gtk_list_store_append(liststore, &iter);
     gtk_list_store_set(
-      liststore, &iter, COL_TIME, depTime, COL_DEST, depDest, COL_BUSNO, depBus, COL_STANDARD, depStandard, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1);
+      liststore, &iter, COL_BUSNO, depBus, COL_DEST, depDest, COL_STANDARD, depStandard, COL_TIME, depTime, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1);
 
     g_free(depTime);
     g_free(depBus);
@@ -502,14 +512,22 @@ void depart_selected(GtkWidget *widget, gpointer user_data)
 }
 
 G_MODULE_EXPORT
-void btnDepartClicked(GtkWidget *widget, gpointer user_data)
+void btnNewClicked(GtkWidget *widget, gpointer user_data)
 {
-  g_print("btnDepart clicked\n");
+  g_print("btnNew clicked\n");
 
   g_print("รถเข้าชานชาลา\n");
   setEntry();
   clearSelected();
   clearEntry();
+  GtkWidget *entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
+  GtkWidget *btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
+  GtkWidget *btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
+  GtkWidget *btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
+  gtk_widget_set_sensitive(btnArrive, FALSE);
+  gtk_widget_set_sensitive(btnDepart, FALSE);
+  gtk_widget_set_sensitive(btnDelete, FALSE);
+  gtk_widget_grab_focus(entRoute);
 }
 
 GdkPixbuf
@@ -537,7 +555,7 @@ db_liststore()
   
   mysql_query(cnx_init, "SET character_set_results='utf8'");
 
-  gchar *sql_buf = "SELECT id, dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
+  gchar *sql_buf = "SELECT dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
   
   //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
   
@@ -551,6 +569,8 @@ db_liststore()
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    LOG(ERROR, "Query error. (1)");
+    LOG(INFO, sql_buf);
     exit(1);
   }
   
@@ -565,13 +585,14 @@ db_liststore()
   }
   GtkTreeSortable *sortable;
   sortable = GTK_TREE_SORTABLE(store);
-  gtk_tree_sortable_set_sort_column_id(sortable, 1, GTK_SORT_ASCENDING);
+  gtk_tree_sortable_set_sort_column_id(sortable, 3, GTK_SORT_ASCENDING);
   
   mysql_free_result(result_set);
 }
 
 int main(int argc, char *argv[])
 {
+  fp= fopen("dts.log", "a+");
 
   GdkPixbuf *icon;
   GSList *lst, *objList;
@@ -583,6 +604,8 @@ int main(int argc, char *argv[])
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
+
+  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "g_log() example...");
 
   icon = create_pixbuf("Digital-Signage.png");
 
@@ -653,6 +676,8 @@ int main(int argc, char *argv[])
 
   g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
   gtk_main();
+
+  fclose(fp);
 
   return 0;
 }

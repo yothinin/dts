@@ -7,6 +7,9 @@
 #include <gdk/gdk.h>
 #include "dts_functions.h"
 
+FILE *fp;
+#define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
+
   gint threadID = 0;
 
   GtkWidget *win=NULL;
@@ -62,7 +65,8 @@ db_init()
   if (cnx_init == NULL){
     g_print("connect failed in mysql_init, \n");
     g_print("exit code: 1\n");
-    //exit(1);
+    LOG(ERROR, "Initialize failed.");
+    exit(1);
   }else{
     bool reconnect = 1;
     unsigned int timeout = 5;
@@ -135,6 +139,7 @@ displayLabel (GtkWidget *widget)
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
     g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    LOG(ERROR, "Querry error.");
     //exit(1);
   }
   
@@ -168,6 +173,7 @@ displayLabel (GtkWidget *widget)
 }
 
 int main(int argc, char *argv[]){
+  fp= fopen("dts.log", "a+");
 
   GdkPixbuf *icon;
   GtkWidget *vbox, *vbox_c;
@@ -277,6 +283,8 @@ int main(int argc, char *argv[]){
 
   gtk_widget_show_all(win);
   gtk_main();
-  
+
+  fclose(fp);
+
   return 0;
 }
