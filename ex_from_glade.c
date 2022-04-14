@@ -25,6 +25,7 @@ GtkWidget *entPlatform;
 GtkWidget *entNote;
 
 gint dts_mode = 0; // 0 = Insert, 1 = Update
+gchar *SERVER;
 
 MYSQL *cnx_init;
 MYSQL *cnx_db;
@@ -100,6 +101,26 @@ static Destination dest[] =
   {"962", "เชียงของ"},
 };
 
+gchar 
+*config_get_string(gchar *file, gchar *group, gchar *key)
+{
+  GKeyFile *key_file;
+  GError *error;
+  //gsize length;
+  gchar *val;
+  
+  key_file = g_key_file_new();
+  error = NULL;
+    
+  if(!g_key_file_load_from_file(key_file, file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, &error)){
+    g_debug("%s", error->message);
+  }else{
+    val = g_key_file_get_string(key_file, group, key, &error);    
+  }
+
+  return val;
+}
+
 void
 db_init()
 {
@@ -120,13 +141,21 @@ db_init()
 void
 db_connect()
 {
-  cnx_db = mysql_real_connect(cnx_init, "203.154.232.29", "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
+  SERVER = config_get_string("dts.conf", "Server", "SERVER");
+  g_print("Connect to: %s\n", SERVER);
+  int i = 0;
+  do {
+    cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
+    g_print("Connect (code 2: %d)\n", i);
+  } while (cnx_db == NULL);
+  /*
   if (cnx_db == NULL){
     g_print("MySQL failure to connect to database...\n");
     g_print("Exit code: 2\n");
     g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
     exit(2);
   }
+  */
 
   g_print("Database connected.\n");
 }
@@ -162,6 +191,7 @@ db_insert(gchar *sql)
 void setEntry()
 {
   g_print("setEntry()\n");
+  entID = GTK_WIDGET(gtk_builder_get_object(builder, "entID"));
   entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
   entMinute = GTK_WIDGET(gtk_builder_get_object(builder, "entMinute"));
   entDest = GTK_WIDGET(gtk_builder_get_object(builder, "entDest"));
@@ -175,7 +205,7 @@ void setEntry()
 void clearEntry()
 {
   g_print("clearEntry()\n");
-  gtk_entry_set_text(GTK_ENTRY(entID), "**********");
+  gtk_entry_set_text(GTK_ENTRY(entID), "***");
   gtk_entry_set_text(GTK_ENTRY(entHour), "");
   gtk_entry_set_text(GTK_ENTRY(entMinute), "");
   gtk_entry_set_text(GTK_ENTRY(entDest), " ");
@@ -184,6 +214,10 @@ void clearEntry()
   gtk_entry_set_text(GTK_ENTRY(entStandard), " ");
   gtk_entry_set_text(GTK_ENTRY(entPlatform), "");
   gtk_entry_set_text(GTK_ENTRY(entNote), "");
+
+  dts_mode = 0;
+  GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
+  gtk_button_set_label(GTK_BUTTON(button), "บันทึก");
 }
 
 void clearSelected()
@@ -376,12 +410,6 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     gtk_list_store_set(
       liststore, &iter, COL_TIME, depTime, COL_DEST, depDest, COL_BUSNO, depBus, COL_STANDARD, depStandard, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1);
 
-    GtkTreeSortable *sortable;
-    //GtkSortType order;
-
-    sortable = GTK_TREE_SORTABLE(liststore);
-    gtk_tree_sortable_set_sort_column_id(sortable, 0, GTK_SORT_ASCENDING);
-
     g_free(depTime);
     g_free(depBus);
 
@@ -410,6 +438,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   
   g_free(curTime);
 
+  db_liststore();
 
   return TRUE;
 }
@@ -477,12 +506,6 @@ void btnDepartClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnDepart clicked\n");
 
-
-  dts_mode = 0;
-
-  GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
-  gtk_button_set_label(GTK_BUTTON(button), "บันทึก");
-
   g_print("รถเข้าชานชาลา\n");
   setEntry();
   clearSelected();
@@ -503,14 +526,58 @@ GdkPixbuf
   return pixbuf;
 }
 
+void
+db_liststore()
+{
+  GtkListStore *store;
+  GtkTreeIter iter1;
+  
+  db_init();
+  db_connect();
+  
+  mysql_query(cnx_init, "SET character_set_results='utf8'");
+
+  gchar *sql_buf = "SELECT id, dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
+  
+  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
+  
+  //g_sprintf(sql_buf, "select dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note from dts_depart where date(dep_datetime) = '%s' and dep_depart <> 1 order by dep_time", curDate);
+
+  
+  store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
+  
+  gtk_list_store_clear(store);
+
+  if (mysql_query(cnx_init, sql_buf) != 0L){
+    g_print("query error... \n");
+    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    exit(1);
+  }
+  
+  // Add data from mysql to GtkListStore, store //  
+  result_set = mysql_store_result(cnx_init);
+  while ((row = mysql_fetch_row(result_set)) != 0L){
+    gtk_list_store_append(store, &iter1);
+    int n;
+    for (n = 0; n < mysql_num_fields(result_set); n++){
+      gtk_list_store_set(store, &iter1, n, row[n], -1);
+    }
+  }
+  GtkTreeSortable *sortable;
+  sortable = GTK_TREE_SORTABLE(store);
+  gtk_tree_sortable_set_sort_column_id(sortable, 1, GTK_SORT_ASCENDING);
+  
+  mysql_free_result(result_set);
+}
+
 int main(int argc, char *argv[])
 {
 
   GdkPixbuf *icon;
   GSList *lst, *objList;
   //GObject* window;
-  GtkListStore *store, *store_std, *store_dest;
-  GtkTreeIter iter, iter2, iter3;
+  GtkListStore *store_std, *store_dest;
+  GtkTreeIter iter2, iter3;
 
   gchar home[256];
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
@@ -540,34 +607,7 @@ int main(int argc, char *argv[])
   gtk_window_set_icon(GTK_WINDOW(window), icon);
   //gtk_window_maximize(GTK_WINDOW(window));
 
-  store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
-
-  db_init();
-  db_connect();
-
-  mysql_query(cnx_init, "SET character_set_results='utf8'");
-
-  gchar *sql_buf = "SELECT id, dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
-  
-  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
-  
-  //g_sprintf(sql_buf, "select dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note from dts_depart where date(dep_datetime) = '%s' and dep_depart <> 1 order by dep_time", curDate);
-
-  if (mysql_query(cnx_init, sql_buf) != 0L){
-    g_print("query error... \n");
-    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    exit(1);
-  }
-  
-  // Add data from mysql to GtkListStore, store //  
-  result_set = mysql_store_result(cnx_init);
-  while ((row = mysql_fetch_row(result_set)) != 0L){
-    gtk_list_store_append(store, &iter);
-    int n;
-    for (n = 0; n < mysql_num_fields(result_set); ++n){
-      gtk_list_store_set(store, &iter, n, row[n], -1);
-    }
-  }
+  db_liststore();
 
   int i;
   store_std = GTK_LIST_STORE(gtk_builder_get_object(builder, "listStandard"));
