@@ -133,7 +133,10 @@ displayLabel (GtkWidget *widget)
   db_connect();
 
   //mysql_query(cnx_init, "SET character_set_results='utf8'");
-  mysql_set_character_set(cnx_init, "utf8");
+  if (!mysql_set_character_set(cnx_init, "utf8"))
+  {
+    printf("New client character set: %s\n", mysql_character_set_name(cnx_init));
+  }
   gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'IN' WHEN dep_depart = 2 THEN 'OUT' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
   
   if (mysql_query(cnx_init, sql_buf) != 0L){
