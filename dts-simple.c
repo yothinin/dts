@@ -68,8 +68,8 @@ db_init()
     LOG(ERROR, "Initialize failed.");
     exit(1);
   }else{
-    my_bool reconnect = 1;
-    unsigned int timeout = 5;
+    my_bool reconnect = 0;
+    unsigned int timeout = 1;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
     
@@ -132,8 +132,8 @@ displayLabel (GtkWidget *widget)
   db_init();
   db_connect();
 
-  mysql_query(cnx_init, "SET character_set_results='utf8'");
-
+  //mysql_query(cnx_init, "SET character_set_results='utf8'");
+  mysql_set_character_set(cnx_init, "utf8");
   gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'IN' WHEN dep_depart = 2 THEN 'OUT' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
   
   if (mysql_query(cnx_init, sql_buf) != 0L){
@@ -167,7 +167,7 @@ displayLabel (GtkWidget *widget)
   mysql_free_result(result_set);
   db_close();
 
-  threadID = g_timeout_add (15000, (GSourceFunc)displayLabel, widget);
+  threadID = g_timeout_add (10000, (GSourceFunc)displayLabel, widget);
 
   return TRUE;
 }
