@@ -146,7 +146,7 @@ displayLabel (GtkWidget *widget)
     LOG(ERROR, "Querry error.");
     //exit(1);
   }
-  LOG(INFO, "Query...");
+  LOG(INFO, "Query in displayLabel()");
   // Add data from mysql to GtkListStore, store //  
   result_set = mysql_store_result(cnx_init);
   
