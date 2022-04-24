@@ -38,20 +38,6 @@ typedef struct
 }
 Table;
 
-//static Table data[] =
-//{
-  //{"17:00", "เชียงใหม่", "18-102", "ม.1ข", "1", "", FALSE},
-  //{"17:30", "เชียงของ", "962-1", "ม.4ข", "3", "", FALSE},
-  //{"18:00", "แม่สาย", "957-3", "ม.1ก", "ประตู 3", "", FALSE},
-  //{"18:05", "เชียงราย", "909-12", "ม.4ข", "4", "", FALSE},
-  //{"18:30", "แม่ฮ่องสอน", "961-1", "ม.1พ", "5", "", FALSE},
-  //{"19:00", "เชียงใหม่", "18-1", "ม.1ข", "1", "", FALSE},
-  //{"19:15", "เชียงใหม่", "18-1", "ม.1ก", "ประตู 3", "", FALSE},
-  //{"19:30", "เชียงราย", "909-1", "ม.1ก", "ประตู 3", "", FALSE},
-  //{"19:45", "น่าน", "910-2", "ม.1ข", "4", "", FALSE},
-//};
-
-
 MYSQL *cnx_init;
 MYSQL *cnx_db;
 MYSQL_RES *result_set;
@@ -73,11 +59,6 @@ db_init()
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
     
-    //if (mysql_set_character_set(cnx_init, "utf8") == 0)
-      //printf("New client character set: %s\n",
-             //mysql_character_set_name(cnx_init));
-    //else
-      //g_print("Setting character failed...\n");
   }
 }
 
@@ -90,15 +71,7 @@ db_connect()
     g_print("LOST CONNECTION...(%d)\n", i++);
     cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
   } while (cnx_db == NULL);
-  
-  //cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
-  //if (cnx_db == NULL){
-    //g_print("MySQL failure to connect to database...\n");
-    //g_print("Exit code: 2\n");
-    //g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    ////exit(2);
-  //}else
-    //g_print("Database connected. (%d)\n", ++i);
+
 }
 
 void
@@ -180,7 +153,6 @@ int main(int argc, char *argv[]){
   GdkPixbuf *icon;
   GtkWidget *vbox, *vbox_c;
   GtkWidget *hbox;
-  //GtkWidget *hbox_c[9];
   GtkWidget *lblDateTime;
   GtkWidget *lblName = NULL;
   GtkWidget *lblHeader = NULL;
@@ -199,9 +171,7 @@ int main(int argc, char *argv[]){
 
   if (remove("dts.log") == 0)
     g_print("Delete file dts.log successfully.\n");
-  
   fp= fopen("dts.log", "a+");
-
   fprintf (fp, "Current dir: %s\n", home);
 
   gtk_init(&argc, &argv);
@@ -216,7 +186,6 @@ int main(int argc, char *argv[]){
   CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
   FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
   FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
-  //g_free(FONT_SIZE_F);
 
   image = load_pixbuf_from_file (BG_IMAGE);
   gdk_pixbuf_render_pixmap_and_mask (image, &background, NULL, 0);
@@ -250,9 +219,7 @@ int main(int argc, char *argv[]){
   
   dfName = pango_font_description_from_string(TITLE_FONT);
   pango_font_description_set_size(dfName, TITLE_SIZE*PANGO_SCALE);
-  
   pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
-  //pango_font_description_set_weight(dfDateTime, PANGO_WEIGHT_BOLD);
 
   gdk_color_parse(HEADER_COLOR, &NameColor);
   gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &NameColor);
