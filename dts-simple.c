@@ -7,8 +7,8 @@
 #include <gdk/gdk.h>
 #include "dts_functions.h"
 
-FILE *fp;
 #define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
+FILE *fp;
 
   gint threadID = 0;
 
@@ -106,6 +106,7 @@ db_close()
 {
   mysql_close(cnx_init);
   g_print("MySQL disconnected.\n");
+  LOG(INFO, "MySQL disconnected.");
 }
 
 static gboolean
@@ -145,7 +146,7 @@ displayLabel (GtkWidget *widget)
     LOG(ERROR, "Querry error.");
     //exit(1);
   }
-  
+  LOG(INFO, "Query...");
   // Add data from mysql to GtkListStore, store //  
   result_set = mysql_store_result(cnx_init);
   
@@ -176,8 +177,6 @@ displayLabel (GtkWidget *widget)
 }
 
 int main(int argc, char *argv[]){
-  fp= fopen("dts.log", "a+");
-
   GdkPixbuf *icon;
   GtkWidget *vbox, *vbox_c;
   GtkWidget *hbox;
@@ -197,6 +196,13 @@ int main(int argc, char *argv[]){
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
+
+  if (remove("dts.log") == 0)
+    g_print("Delete file dts.log successfully.\n");
+  
+  fp= fopen("dts.log", "a+");
+
+  fprintf (fp, "Current dir: %s\n", home);
 
   gtk_init(&argc, &argv);
   
@@ -287,6 +293,7 @@ int main(int argc, char *argv[]){
   gtk_widget_show_all(win);
   gtk_main();
 
+  fprintf(fp, "Normal ending program.\n");
   fclose(fp);
 
   return 0;
