@@ -238,6 +238,18 @@ void clearSelected()
 }
 
 G_MODULE_EXPORT
+void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
+{
+  g_print("btnDepart_cliecked_cb()\n");
+}
+
+G_MODULE_EXPORT
+void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
+{
+   g_print("btnArrive_clicked_cb()\n");
+}
+
+G_MODULE_EXPORT
 void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
   g_print("treeviewEvent()\n");
@@ -404,6 +416,17 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   const gchar *depStandard = gtk_entry_get_text(GTK_ENTRY(entStandard));
   const gchar *depPlatform = gtk_entry_get_text(GTK_ENTRY(entPlatform));
   const gchar *depNote = gtk_entry_get_text(GTK_ENTRY(entNote));
+  
+  if ( strcmp(depRoute, "") == 0 ||
+       strcmp(depBusNo, "") == 0 ||
+       strcmp(depHour, "") == 0 ||
+       strcmp(depMinute, "") == 0 ||
+       strcmp(depStandard, "") == 0)
+  {
+    btnNewClicked(NULL, NULL);
+    g_print("\nNo data to save.\n\n");
+    return TRUE; 
+  }
 
   gchar buf_sql[256];
 
@@ -671,7 +694,7 @@ int main(int argc, char *argv[])
   g_object_bind_property (cmbStandard, "active-id",
                           entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
-
+                          
   treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
   //g_signal_connect(treeview, "button-press-event", G_CALLBACK(treeviewEvent), NULL);
   //g_signal_connect(treeview, "row-activated", G_CALLBACK(onTreeViewRowActivated), NULL);
