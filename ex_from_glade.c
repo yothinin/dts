@@ -408,6 +408,16 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
   setEntry();
 
+  GtkTreeIter iter;
+  GtkListStore *store;
+
+  gchar *depStdCode;
+
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
   const gchar *depHour = gtk_entry_get_text(GTK_ENTRY(entHour));
   const gchar *depMinute = gtk_entry_get_text(GTK_ENTRY(entMinute));
   const gchar *depDest = gtk_entry_get_text(GTK_ENTRY(entDest));
@@ -431,7 +441,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   gchar buf_sql[256];
 
   if (dts_mode == 0){
-    g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStandard, depPlatform, depNote, curTime);
+    g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_std_code, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStdCode, depStandard, depPlatform, depNote, curTime);
 
     GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     GtkTreeIter iter;
@@ -460,8 +470,8 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbDest), 0);
 
-  GtkWidget *cmbStandard;
-  cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
+  //GtkWidget *cmbStandard;
+  //cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbStandard), 0);
 
   GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
