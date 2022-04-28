@@ -30,6 +30,7 @@ GtkWidget *entNote;
 
 gint dts_mode = 0; // 0 = Insert, 1 = Update
 gchar *SERVER;
+gchar *sql;
 
 MYSQL *cnx_init;
 MYSQL *cnx_db;
@@ -171,7 +172,7 @@ db_close()
 }
 
 void
-db_insert(gchar *sql)
+db_query(gchar *sql)
 {
   db_init();
   db_connect();
@@ -250,21 +251,6 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
 }
 
 G_MODULE_EXPORT
-void treeviewEvent(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
-{
-  g_print("treeviewEvent()\n");
-  if (event->type == GDK_BUTTON_PRESS && event->button == 3){
-    g_print("treeviewEvent: right click...\n");
-    btnNewClicked(treeview, NULL);
-
-  }
-
-  if (event->type == GDK_BUTTON_PRESS && event->button == 1)
-    g_print("treeviewEvent: left clicked...\n");
-
-}
-
-G_MODULE_EXPORT
 void
 onTreeViewRowActivated (GtkTreeView *view,
                         GtkTreePath *path,
@@ -288,7 +274,7 @@ onTreeViewRowActivated (GtkTreeView *view,
     gtk_tree_model_get(model, &iter, 0, &time, -1);
     gtk_tree_model_get(model, &iter, 1, &dest, -1);
     gtk_tree_model_get(model, &iter, 2, &busno, -1);
-    g_print ("ผู้ใช้คลิกปล่อยรถ: %s\n", time);
+    g_print ("คลิกเที่ยวรถ: %s\n", time);
   }
 
   if (time != 0L){
@@ -378,7 +364,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     g_strfreev(arrBusNo);
     g_strfreev(arrTime);
 
-    GtkWidget *entHour = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
+    GtkWidget *entHour   = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
     GtkWidget *btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
     GtkWidget *btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
     GtkWidget *btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
@@ -386,9 +372,9 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gtk_widget_set_sensitive(btnArrive, TRUE);
     gtk_widget_set_sensitive(btnDepart, TRUE);
     gtk_widget_set_sensitive(btnDelete, TRUE);
+ 
     gtk_widget_grab_focus(entHour);
 
-    
   }
 }
 
@@ -438,10 +424,19 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     return TRUE; 
   }
 
-  gchar buf_sql[256];
+  //gchar buf_sql[256];
 
   if (dts_mode == 0){
-    g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_std_code, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStdCode, depStandard, depPlatform, depNote, curTime);
+    //g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_std_code, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStdCode, depStandard, depPlatform, depNote, curTime);
+
+    sql = g_strconcat("INSERT INTO dts_depart(", 
+                      "dep_time, dep_dest, dep_busno, dep_std_code, ", 
+                      "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (", 
+                      "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
+                      "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
+                      "'", depStandard,                 "', ", "'", depPlatform, "', ", 
+                      "'", depNote,                     "', ", "'", curTime, "')", NULL);
+                      
 
     GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     GtkTreeIter iter;
@@ -457,12 +452,25 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     g_free(depBus);
 
   }else{
-    //g_sprintf(buf_sql, "UPDATE dts_depart
+    sql = g_strconcat(
+          "UPDATE dts_depart SET ",
+          "dep_time = '"    , depHour, ":", depMinute, "', ",
+          "dep_platform = '", depPlatform            , "', ", 
+          "dep_note = '"    , depNote                , "', ",
+          "dep_datetime = '", curTime                , "' ",
+          "WHERE ", 
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ", 
+          "date(dep_datetime) = curdate();", 
+          NULL);
+               
   }
 
-  db_insert(buf_sql);
+  //db_insert(buf_sql);
+  db_query(sql);
 
-  g_print("%s\n", buf_sql);
+  //g_print("%s\n", buf_sql);
+  g_print("%s\n", sql);
 
   clearEntry();
 
@@ -476,12 +484,13 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
   GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
   gtk_button_set_label(GTK_BUTTON(button), "บันทึก");
-
   gtk_widget_grab_focus(cmbDest);
   
   g_free(curTime);
+  g_free(sql);
 
   db_liststore();
+  btnNewClicked(NULL, NULL);
 
   return TRUE;
 }
@@ -629,6 +638,7 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
   if (strcmp(gdk_keyval_name(event->keyval), "Return") == 0){
     g_print("press enter key.\n");
     gtk_widget_grab_focus(GTK_WIDGET(user_data));
+    return TRUE;
   }
   
   return FALSE;

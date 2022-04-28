@@ -178,7 +178,6 @@
                         <property name="can-focus">True</property>
                         <property name="model">liststore1</property>
                         <property name="enable-grid-lines">vertical</property>
-                        <signal name="row-activated" handler="onTreeViewRowActivated" swapped="no"/>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="selection"/>
                         </child>
@@ -486,6 +485,7 @@
                         <property name="wrap-width">1</property>
                         <property name="id-column">1</property>
                         <signal name="changed" handler="std_change" swapped="no"/>
+                        <signal name="key-press-event" handler="onKeyPress" object="entHour" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="std_code"/>
                           <attributes>
