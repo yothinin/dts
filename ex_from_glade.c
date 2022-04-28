@@ -596,17 +596,20 @@ db_liststore()
   db_connect();
   
   mysql_query(cnx_init, "SET character_set_results='utf8'");
-
-  gchar *sql_buf = "SELECT dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
-  
-  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note FROM dts_depart WHERE date(dep_datetime) = curdate();";
-  
-  //g_sprintf(sql_buf, "select dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_note from dts_depart where date(dep_datetime) = '%s' and dep_depart <> 1 order by dep_time", curDate);
-
+  //gchar *sql_buf = "SELECT dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
+  gchar *sql_buf;
+  sql_buf = g_strconcat(
+              "SELECT ", 
+              "dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note ", 
+              "FROM dts_depart ", 
+              "WHERE ", 
+              "(STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and ", 
+              "date(dep_datetime) = curdate();", NULL);
   
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
   
   gtk_list_store_clear(store);
+  g_print("%s\n", sql_buf);
 
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
