@@ -111,7 +111,25 @@ displayLabel (GtkWidget *widget)
   {
     printf("New client character set: %s\n", mysql_character_set_name(cnx_init));
   }
-  gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'IN' WHEN dep_depart = 2 THEN 'OUT' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
+  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'เข้าชานชาลา' WHEN dep_depart = 2 THEN 'รถออก' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
+  //            "  (CASE ",
+  //            "    WHEN dep_depart = 0 THEN ' ' ",
+  //            "    WHEN dep_depart = 1 THEN 'เข้า' ",
+  //            "    WHEN dep_depart = 2 THEN 'ออก' ",
+  //            "  END) as dep_status ",
+
+
+  gchar *sql_buf;
+  sql_buf = g_strconcat(
+              "select ",
+              "  dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_depart ", 
+              "FROM ",
+              "  dts_depart ",
+              "WHERE ",
+              "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
+              "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
+              "  dep_date = DATE(curdate()) ",
+              "ORDER BY dep_date, dep_time ", NULL);
   
   if (mysql_query(cnx_init, sql_buf) != 0L){
     g_print("query error... \n");
@@ -129,6 +147,14 @@ displayLabel (GtkWidget *widget)
   GtkWidget *hbox_c;
 
   while ((row = mysql_fetch_row(result_set)) != 0L){
+	gchar *depStatus;
+	if (*row[5] == '1')
+	  depStatus = "เข้า";
+	else if (*row[5] == '2')
+	  depStatus = "ออก";
+	else
+	  depStatus = "";
+	  
     hbox_c = gtk_hbox_new(FALSE, 5);
     gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
     set_label(hbox_c, lbl, 5, row[0], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
@@ -136,7 +162,7 @@ displayLabel (GtkWidget *widget)
     set_label(hbox_c, lbl, 7, row[2], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 8, row[3], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
     set_label(hbox_c, lbl, 7, row[4], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 15, row[5], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+    set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, (*row[5] == '1')?CONTENT_COLOR:"#ff0000", FALSE, FALSE);
   }
 
   gtk_widget_show_all(win);
