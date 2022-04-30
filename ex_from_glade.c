@@ -27,6 +27,11 @@ GtkWidget *entDest, *entRoute, *entBusNo;
 GtkWidget *entStandard;
 GtkWidget *entPlatform;
 GtkWidget *entNote;
+GtkWidget *cmbDest;
+GtkWidget *cmbStandard;
+GtkWidget *btnDepart;
+GtkWidget *btnArrive;
+GtkWidget *btnDelete;
 
 gint dts_mode = 0; // 0 = Insert, 1 = Update
 gchar *SERVER;
@@ -239,15 +244,117 @@ void clearSelected()
 }
 
 G_MODULE_EXPORT
+void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
+{
+ //g_print("btnDepart_cliecked_cb()\n");
+  GtkTreeIter iter;
+  GtkListStore *store;
+  gchar *depStdCode;
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
+  entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+  entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+  const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
+  const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
+  
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
+
+  gchar *sql;
+  sql = g_strconcat(
+          "UPDATE dts_depart SET ",
+          "dep_depart = 0 ", 
+          "WHERE ", 
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ",
+          "date(dep_datetime) = '", curDate , "'; ",
+          NULL);
+          
+  db_query(sql);
+  db_liststore();
+  btnNewClicked(NULL, NULL);
+
+  g_print("Clear depart status: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  g_print(sql);
+}
+
+G_MODULE_EXPORT
 void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
 {
-  g_print("btnDepart_cliecked_cb()\n");
+  //g_print("btnDepart_cliecked_cb()\n");
+  GtkTreeIter iter;
+  GtkListStore *store;
+  gchar *depStdCode;
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
+  entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+  entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+  const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
+  const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
+  
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
+
+  gchar *sql;
+  sql = g_strconcat(
+          "UPDATE dts_depart SET ",
+          "dep_depart = 2 ", 
+          "WHERE ", 
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ",
+          "date(dep_datetime) = '", curDate , "'; ",
+          NULL);
+          
+  db_query(sql);
+  db_liststore();
+  btnNewClicked(NULL, NULL);
+
+  g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  g_print(sql);
 }
 
 G_MODULE_EXPORT
 void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
 {
-   g_print("btnArrive_clicked_cb()\n");
+  //g_print("btnArrive_clicked_cb()\n");
+  GtkTreeIter iter;
+  GtkListStore *store;
+  gchar *depStdCode;
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
+  entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+  entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+  const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
+  const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
+  
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
+
+  gchar *sql;
+  sql = g_strconcat(
+          "UPDATE dts_depart SET ",
+          "dep_depart = 1 ", 
+          "WHERE ", 
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ",
+          "date(dep_datetime) = '", curDate , "'; ",
+          NULL);
+          
+  db_query(sql);
+  db_liststore();
+  btnNewClicked(NULL, NULL);
+
+  g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  g_print(sql);
 }
 
 G_MODULE_EXPORT
@@ -336,6 +443,15 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     entMinute = (GtkWidget*)gtk_builder_get_object(builder, "entMinute");
     entPlatform = (GtkWidget*)gtk_builder_get_object(builder, "entPlatform");
     entNote = (GtkWidget*)gtk_builder_get_object(builder, "entNote");
+    cmbDest = (GtkWidget*)gtk_builder_get_object(builder, "cmbDest");
+    cmbStandard = (GtkWidget*)gtk_builder_get_object(builder, "cmbStandard");
+
+    gtk_widget_set_sensitive(entRoute, FALSE);
+    gtk_widget_set_sensitive(entBusNo, FALSE);
+    gtk_widget_set_sensitive(entDest, FALSE);
+    gtk_widget_set_sensitive(entStandard, FALSE);
+    gtk_widget_set_sensitive(cmbDest, FALSE);
+    gtk_widget_set_sensitive(cmbStandard, FALSE);
 
     gchar **arrBusNo = g_strsplit(busno, "-", 0);
     gchar **arrTime = g_strsplit(time, ":", 0);
@@ -430,8 +546,9 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     //g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_std_code, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStdCode, depStandard, depPlatform, depNote, curTime);
 
     sql = g_strconcat("INSERT INTO dts_depart(", 
-                      "dep_time, dep_dest, dep_busno, dep_std_code, ", 
-                      "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (", 
+                      "dep_date, dep_time, dep_dest, dep_busno, dep_std_code, ", 
+                      "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (",
+                      "DATE(now()), ", 
                       "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
                       "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
                       "'", depStandard,                 "', ", "'", depPlatform, "', ", 
@@ -562,10 +679,22 @@ void btnNewClicked(GtkWidget *widget, gpointer user_data)
   setEntry();
   clearSelected();
   clearEntry();
-  GtkWidget *entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
-  GtkWidget *btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
-  GtkWidget *btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
-  GtkWidget *btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
+  
+  entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
+  btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
+  btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
+  btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
+
+  cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
+  cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
+  
+  gtk_widget_set_sensitive(entRoute, TRUE);
+  gtk_widget_set_sensitive(entBusNo, TRUE);
+  gtk_widget_set_sensitive(entDest, TRUE);
+  gtk_widget_set_sensitive(entStandard, TRUE);
+  gtk_widget_set_sensitive(cmbDest, TRUE);
+  gtk_widget_set_sensitive(cmbStandard, TRUE);
+  
   gtk_widget_set_sensitive(btnArrive, FALSE);
   gtk_widget_set_sensitive(btnDepart, FALSE);
   gtk_widget_set_sensitive(btnDelete, FALSE);
@@ -598,6 +727,7 @@ db_liststore()
   mysql_query(cnx_init, "SET character_set_results='utf8'");
   //gchar *sql_buf = "SELECT dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
   gchar *sql_buf;
+  /*
   sql_buf = g_strconcat(
               "SELECT ", 
               "dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note ", 
@@ -605,6 +735,23 @@ db_liststore()
               "WHERE ", 
               "(STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and ", 
               "date(dep_datetime) = curdate();", NULL);
+  */
+             
+  sql_buf = g_strconcat(
+              "select ",
+              "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note, ", 
+              "  (CASE ",
+              "    WHEN dep_depart = 0 THEN ' ' ",
+              "    WHEN dep_depart = 1 THEN 'เข้า' ",
+              "    WHEN dep_depart = 2 THEN 'ออก' ",
+              "  END) as dep_status ",
+              "FROM ",
+              "  dts_depart ",
+              "WHERE ",
+              "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
+              "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
+              "  dep_date = DATE(curdate()) ",
+              "ORDER BY dep_date, dep_time ", NULL);
   
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
   
