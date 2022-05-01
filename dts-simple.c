@@ -132,7 +132,7 @@ displayLabel (GtkWidget *widget)
               "  dts_depart ",
               "WHERE ",
               "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
-              "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
+              "  DATE_FORMAT(now()-interval 15 minute, '%Y-%m-%d %T') AND ",
               "  dep_date = DATE(curdate()) ",
               "ORDER BY dep_date, dep_time ", NULL);
   
