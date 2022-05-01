@@ -725,18 +725,7 @@ db_liststore()
   db_connect();
   
   mysql_query(cnx_init, "SET character_set_results='utf8'");
-  //gchar *sql_buf = "SELECT dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate();";
   gchar *sql_buf;
-  /*
-  sql_buf = g_strconcat(
-              "SELECT ", 
-              "dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note ", 
-              "FROM dts_depart ", 
-              "WHERE ", 
-              "(STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and ", 
-              "date(dep_datetime) = curdate();", NULL);
-  */
-             
   sql_buf = g_strconcat(
               "select ",
               "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note, ", 
