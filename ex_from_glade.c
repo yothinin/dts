@@ -76,6 +76,7 @@ enum
   COL_STANDARD,
   COL_TIME,
   COL_PLATFORM,
+  COL_STATUS,
   COL_NOTE,
   NUM_COLUMNS
 };
@@ -102,6 +103,7 @@ static Destination dest[] =
   {"20", "ขอนแก่น"},
   {"31", "สุรินทร์"},
   {"47", "ทุ่งช้าง"},
+  {"91", "ลำปาง"},
   {"909", "เชียงราย"},
   {"910", "น่าน"},
   {"922", "แพร่"},
@@ -429,10 +431,11 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gchar *busno;
     gchar *standard;
     gchar *platform;
+    gchar *status;
     gchar *note;
 
     gtk_tree_model_get(model, &iter,
-	  COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_NOTE, &note,
+	  COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_STATUS, &status, COL_NOTE, &note,
       -1);
 
     entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
@@ -613,9 +616,40 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 }
 
 G_MODULE_EXPORT
-void btnCancelClicked(GtkWidget *widget, gpointer user_data)
+void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
 {
-  g_print("btnCancel clicked...\n");
+  g_print("btnDelete clicked...\n");
+  GtkTreeIter iter;
+  GtkListStore *store;
+  gchar *depStdCode;
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
+  entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+  entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+  const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
+  const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
+  
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
+
+  gchar *sql;
+  sql = g_strconcat(
+          "DELETE FROM dts_depart ",
+          "WHERE ",
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ",
+          "date(dep_datetime) = '", curDate , "'; ",
+          NULL);
+          
+  db_query(sql);
+  db_liststore();
+  btnNewClicked(NULL, NULL);
+
+  g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  g_print(sql);  
 }
 
 G_MODULE_EXPORT
@@ -728,12 +762,13 @@ db_liststore()
   gchar *sql_buf;
   sql_buf = g_strconcat(
               "select ",
-              "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, dep_note, ", 
+              "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, ", 
               "  (CASE ",
               "    WHEN dep_depart = 0 THEN ' ' ",
               "    WHEN dep_depart = 1 THEN 'เข้า' ",
               "    WHEN dep_depart = 2 THEN 'ออก' ",
-              "  END) as dep_status ",
+              "  END) as dep_status , ",
+              "  dep_note "
               "FROM ",
               "  dts_depart ",
               "WHERE ",

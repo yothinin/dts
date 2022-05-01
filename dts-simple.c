@@ -1,3 +1,11 @@
+/*
+ * gcc -g -Wall -o dts-simple dts-simple.c dts_functions.c 
+ * `pkg-config --libs --cflags gtk+-2.0`
+ * `mysql_config --cflags --libs`
+ * -DGTK_DISABLE_DEPRECATE
+ * 
+ */
+
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <glib.h>

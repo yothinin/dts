@@ -269,13 +269,10 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="col_note">
-                            <property name="resizable">True</property>
-                            <property name="sizing">fixed</property>
-                            <property name="fixed-width">200</property>
-                            <property name="title" translatable="yes">หมายเหตุ</property>
+                          <object class="GtkTreeViewColumn" id="col_depart">
+                            <property name="title" translatable="yes">สถานะ</property>
                             <child>
-                              <object class="GtkCellRendererText" id="renderer_note"/>
+                              <object class="GtkCellRendererText" id="render_depart"/>
                               <attributes>
                                 <attribute name="text">5</attribute>
                               </attributes>
@@ -283,10 +280,13 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkTreeViewColumn" id="col_depart">
-                            <property name="title" translatable="yes">สถานะ</property>
+                          <object class="GtkTreeViewColumn" id="col_note">
+                            <property name="resizable">True</property>
+                            <property name="sizing">fixed</property>
+                            <property name="fixed-width">100</property>
+                            <property name="title" translatable="yes">หมายเหตุ</property>
                             <child>
-                              <object class="GtkCellRendererText" id="render_depart"/>
+                              <object class="GtkCellRendererText" id="renderer_note"/>
                               <attributes>
                                 <attribute name="text">6</attribute>
                               </attributes>
@@ -756,6 +756,7 @@
                         <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="receives-default">True</property>
+                        <signal name="clicked" handler="btnDelete_clicked_cb" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
