@@ -31,6 +31,7 @@ GtkWidget *cmbDest;
 GtkWidget *cmbStandard;
 GtkWidget *btnDepart;
 GtkWidget *btnArrive;
+GtkWidget *btnEmpty;
 GtkWidget *btnDelete;
 
 gint dts_mode = 0; // 0 = Insert, 1 = Update
@@ -108,7 +109,11 @@ static Destination dest[] =
   {"910", "น่าน"},
   {"922", "แพร่"},
   {"923", "พะเยา"},
+  {"928", "มุกดาหาร"},
+  {"933", "ศรีเชียงใหม่"},
+  {"940", "ศรีสะเกษ"},
   {"957", "แม่สาย"},
+  {"961", "แม่ฮ่องสอน"},
   {"962", "เชียงของ"},
 };
 
@@ -435,7 +440,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gchar *note;
 
     gtk_tree_model_get(model, &iter,
-	  COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_STATUS, &status, COL_NOTE, &note,
+      COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_STATUS, &status, COL_NOTE, &note,
       -1);
 
     entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
@@ -486,10 +491,12 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     GtkWidget *entHour   = GTK_WIDGET(gtk_builder_get_object(builder, "entHour"));
     GtkWidget *btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
     GtkWidget *btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
+    GtkWidget *btnEmpty = GTK_WIDGET(gtk_builder_get_object(builder, "btnEmpty"));
     GtkWidget *btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
 
     gtk_widget_set_sensitive(btnArrive, TRUE);
     gtk_widget_set_sensitive(btnDepart, TRUE);
+    gtk_widget_set_sensitive(btnEmpty, TRUE);
     gtk_widget_set_sensitive(btnDelete, TRUE);
  
     gtk_widget_grab_focus(entHour);
@@ -717,6 +724,7 @@ void btnNewClicked(GtkWidget *widget, gpointer user_data)
   entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
   btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
   btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
+  btnEmpty = GTK_WIDGET(gtk_builder_get_object(builder, "btnEmpty"));
   btnDelete = GTK_WIDGET(gtk_builder_get_object(builder, "btnDelete"));
 
   cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
@@ -731,6 +739,7 @@ void btnNewClicked(GtkWidget *widget, gpointer user_data)
   
   gtk_widget_set_sensitive(btnArrive, FALSE);
   gtk_widget_set_sensitive(btnDepart, FALSE);
+  gtk_widget_set_sensitive(btnEmpty, FALSE);
   gtk_widget_set_sensitive(btnDelete, FALSE);
   gtk_widget_grab_focus(entRoute);
 }
@@ -858,7 +867,7 @@ int main(int argc, char *argv[])
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
   //gtk_window_maximize(GTK_WINDOW(window));
-
+  gtk_window_fullscreen(GTK_WINDOW(window));
   db_liststore();
 
   int i;
