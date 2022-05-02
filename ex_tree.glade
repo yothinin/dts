@@ -457,7 +457,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="max-length">20</property>
-                        <property name="width-chars">21</property>
+                        <property name="width-chars">20</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
