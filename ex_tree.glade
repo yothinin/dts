@@ -456,8 +456,8 @@
                       <object class="GtkEntry" id="entDest">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="max-length">10</property>
-                        <property name="width-chars">10</property>
+                        <property name="max-length">20</property>
+                        <property name="width-chars">21</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
