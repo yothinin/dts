@@ -26,6 +26,7 @@ FILE *fp;
   gchar *TITLE_FONT;
   gint TITLE_SIZE;
   gchar *HEADER_COLOR;
+  gchar *TIME_COLOR;
   gchar *CONTENT_COLOR;
   gchar *FONT_SIZE_F;
   gint FONT_SIZE;
@@ -59,7 +60,7 @@ db_init()
     LOG(ERROR, "Initialize failed.");
     exit(1);
   }else{
-    my_bool reconnect = 0;
+    bool reconnect = 0;
     unsigned int timeout = 1;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
@@ -194,6 +195,7 @@ int main(int argc, char *argv[]){
   GdkPixmap *background = NULL;
   GtkStyle *style = NULL;
   GdkColor NameColor;
+  GdkColor TimeColor;
   
   gchar home[256];
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
@@ -214,6 +216,7 @@ int main(int argc, char *argv[]){
   TITLE_FONT = config_get_string("dts.conf", "Title", "TITLE_FONT");
   TITLE_SIZE = config_get_integer("dts.conf", "Title", "TITLE_SIZE");
   HEADER_COLOR = config_get_string("dts.conf", "Color", "HEADER_COLOR");
+  TIME_COLOR = config_get_string("dts.conf", "Color", "TIME_COLOR");
   CONTENT_COLOR = config_get_string("dts.conf", "Color", "CONTENT_COLOR");
   FONT_SIZE_F = config_get_string("dts.conf", "Contents", "FONT_SIZE");
   FONT_SIZE = config_get_integer("dts.conf", "Contents", FONT_SIZE_F);
@@ -253,8 +256,9 @@ int main(int argc, char *argv[]){
   pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
 
   gdk_color_parse(HEADER_COLOR, &NameColor);
-  gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &NameColor);
+  gdk_color_parse(TIME_COLOR, &TimeColor);
   gtk_widget_modify_fg(GTK_WIDGET(lblName), GTK_STATE_NORMAL, &NameColor);
+  gtk_widget_modify_fg(GTK_WIDGET(lblDateTime), GTK_STATE_NORMAL, &TimeColor);
 
   gtk_widget_modify_font(lblDateTime, dfDateTime);
   gtk_widget_modify_font(lblName, dfName);
