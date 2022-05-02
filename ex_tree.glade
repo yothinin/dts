@@ -112,6 +112,7 @@
                   <object class="GtkButton" id="btnEmpty">
                     <property name="label" translatable="yes">ว่าง</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can-focus">False</property>
                     <property name="receives-default">True</property>
                     <signal name="clicked" handler="btnEmpty_clicked_cb" swapped="no"/>
@@ -827,6 +828,34 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">9</property>
+                    <property name="label" translatable="yes">ลบสถานะ ให้คลิกที่ตาราง แล้วคลิกปุ่ม ว่าง</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xpad">9</property>
+                    <property name="label" translatable="yes">ลบรายการ ให้คลิกที่ตาราง แล้วคลิกปุ่ม ลบ</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -835,18 +864,34 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="btnCancel">
-                <property name="label" translatable="yes"> ออกจากโปรแกรม</property>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkButton" id="btnCancel">
+                    <property name="label" translatable="yes"> ออกจากโปรแกรม</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="gtk_main_quit" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="pack-type">end</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
                 <property name="pack-type">end</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
