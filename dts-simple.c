@@ -60,7 +60,7 @@ db_init()
     LOG(ERROR, "Initialize failed.");
     exit(1);
   }else{
-    bool reconnect = 0;
+    my_bool reconnect = 0;
     unsigned int timeout = 1;
     mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
     mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
@@ -173,9 +173,11 @@ displayLabel (GtkWidget *widget)
 
   gtk_widget_show_all(win);
   g_print("Server: %s,\n%s\n", SERVER, sql_buf);
-  mysql_free_result(result_set);
-  db_close();
 
+  mysql_free_result(result_set);
+  g_free(sql_buf);
+
+  db_close();
   threadID = g_timeout_add (10000, (GSourceFunc)displayLabel, widget);
 
   return TRUE;
