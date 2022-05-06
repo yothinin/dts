@@ -15,21 +15,21 @@
 #define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
 FILE *fp;
 
-  gint threadID = 0;
+gint threadID = 0;
 
-  GtkWidget *win=NULL;
+GtkWidget *win=NULL;
 
-  // Read file dts.conf to setup color, font and font size.
-  gchar *SERVER;
-  gchar *BG_IMAGE;
-  gchar *TITLE_TEXT;
-  gchar *TITLE_FONT;
-  gint TITLE_SIZE;
-  gchar *HEADER_COLOR;
-  gchar *TIME_COLOR;
-  gchar *CONTENT_COLOR;
-  gchar *FONT_SIZE_F;
-  gint FONT_SIZE;
+// Read file dts.conf to setup color, font and font size.
+gchar *SERVER;
+gchar *BG_IMAGE;
+gchar *TITLE_TEXT;
+gchar *TITLE_FONT;
+gint TITLE_SIZE;
+gchar *HEADER_COLOR;
+gchar *TIME_COLOR;
+gchar *CONTENT_COLOR;
+gchar *FONT_SIZE_F;
+gint FONT_SIZE;
 
 typedef struct
 {
@@ -147,6 +147,7 @@ displayLabel (GtkWidget *widget)
   // Add data from mysql to GtkListStore, store //  
   result_set = mysql_store_result(cnx_init);
   
+  // Remove all widget in container named vbox_c. //
   gtk_container_foreach(GTK_CONTAINER(widget), (void*) gtk_widget_destroy, NULL);
 
   GtkWidget *lbl=NULL;
