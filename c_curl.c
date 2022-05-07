@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <curl/curl.h>
+#include <json-c/json.h>
 
 struct MemoryStruct{
   char *memory;
@@ -57,7 +58,12 @@ main(int argc, char **argv)
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     }else{
       //printf("%lu bytes retrieved\n", (long)chunk.size);
-      printf("%s\n", chunk.memory);
+      //printf("%s\n", chunk.memory);
+      json_object *root = json_tokener_parse(chunk.memory);
+      printf("The json string:\n\n%s\n\n", json_object_to_json_string(root));
+      printf("The json object to string: \n\n%s\n", json_object_to_json_string_ext(root, JSON_C_TO_STRING_PRETTY));
+      json_object_put(root);
+      
     }
   }
   
