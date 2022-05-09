@@ -1,6 +1,6 @@
 /*
  * gcc -g -Wall -o dts-simple dts-simple.c dts_functions.c `pkg-config --libs --cflags gtk+-2.0` `mysql_config --cflags --libs` -DGTK_DISABLE_DEPRECATE
- * 
+ *
  */
 
 #include <gtk/gtk.h>
@@ -8,12 +8,14 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gprintf.h>
-#include <mysql.h>
 #include <gdk/gdk.h>
+#include <time.h>
+#include <curl/curl.h>
+#include <json-c/json.h>
+
 #include "dts_functions.h"
 
-#define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
-FILE *fp;
+//FILE *fp;
 
 gint threadID = 0;
 
@@ -24,12 +26,12 @@ gchar *SERVER;
 gchar *BG_IMAGE;
 gchar *TITLE_TEXT;
 gchar *TITLE_FONT;
-gint TITLE_SIZE;
+gint   TITLE_SIZE;
 gchar *HEADER_COLOR;
 gchar *TIME_COLOR;
 gchar *CONTENT_COLOR;
 gchar *FONT_SIZE_F;
-gint FONT_SIZE;
+gint   FONT_SIZE;
 
 typedef struct
 {
@@ -44,48 +46,29 @@ typedef struct
 }
 Table;
 
-MYSQL *cnx_init;
-MYSQL *cnx_db;
-MYSQL_RES *result_set;
-MYSQL_ROW row;
+struct MemoryStruct{
+  char *memory;
+  size_t size;
+};
 
-void
-db_init()
+static size_t
+WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  g_print("Start connect to sql...\n");
-  cnx_init = mysql_init(NULL);
-  if (cnx_init == NULL){
-    g_print("connect failed in mysql_init, \n");
-    g_print("exit code: 1\n");
-    LOG(ERROR, "Initialize failed.");
-    exit(1);
-  }else{
-    my_bool reconnect = 0;
-    unsigned int timeout = 1;
-    mysql_options(cnx_init, MYSQL_OPT_RECONNECT, &reconnect);
-    mysql_options(cnx_init, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
-    
+  size_t realsize = size * nmemb;
+  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+  mem->memory = realloc(mem->memory, mem->size+realsize + 1);
+
+  if (mem->memory == NULL){
+    // out of memory
+    printf("not enough memory (realloc returned NULL)\n");
+    return 0;
   }
-}
 
-void
-db_connect()
-{
-  int i = 0;
-  
-  do {
-    g_print("LOST CONNECTION...(%d)\n", i++);
-    cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_r", "0rangePi", "dts", 3306, NULL, 0);
-  } while (cnx_db == NULL);
+  memcpy(&(mem->memory[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
 
-}
-
-void
-db_close()
-{
-  mysql_close(cnx_init);
-  g_print("MySQL disconnected.\n");
-  LOG(INFO, "MySQL disconnected.");
+  return realsize;
 }
 
 static gboolean
@@ -98,7 +81,7 @@ update_time(GtkWidget *label)
   g_sprintf(buf, "%s", mytime);
   g_free(mytime);
   g_date_time_unref(now);
-  
+
   gtk_label_set_text(GTK_LABEL(label), buf);
 
   return TRUE;
@@ -108,77 +91,87 @@ static gboolean
 displayLabel (GtkWidget *widget)
 {
   g_source_remove(threadID);
- 
-  db_init();
-  db_connect();
 
-  //mysql_query(cnx_init, "SET character_set_results='utf8'");
-  if (!mysql_set_character_set(cnx_init, "utf8"))
-  {
-    printf("New client character set: %s\n", mysql_character_set_name(cnx_init));
+  time_t now;
+  time(&now);
+  printf("in : %s", ctime(&now));
+
+//--------------------------------------//
+  char url[] = "https://dts.bustecz.com/dts_api/getsch.php";
+  char postData[] = "date=2022-05-06&station=10001&route=18";
+
+  CURL *curl;
+  CURLcode res;
+
+  struct MemoryStruct chunk;
+  chunk.memory = malloc(1);
+  chunk.size = 0;
+
+  curl_global_init(CURL_GLOBAL_ALL);
+  curl = curl_easy_init();
+
+  if (curl){
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK){
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }else{
+      json_object *root = json_tokener_parse(chunk.memory);
+      const char *str;
+      int i;
+      int n = json_object_array_length(root);
+
+      // Remove all widget in container named vbox_c. //
+      gtk_container_foreach(GTK_CONTAINER(widget), (void*) gtk_widget_destroy, NULL);
+
+      GtkWidget *lbl=NULL;
+      GtkWidget *hbox_c;
+      for (i = 0; i<n; i++){
+        
+        str = json_object_get_string(json_object_array_get_idx(root, i));
+        json_object *sch = json_tokener_parse(str);
+        json_object *objTime = json_object_object_get(sch, "dep_time");
+        json_object *objDest = json_object_object_get(sch, "dep_dest");
+        json_object *objBusno = json_object_object_get(sch, "dep_busno");
+        json_object *objStandard = json_object_object_get(sch, "dep_standard");
+        json_object *objPlatform = json_object_object_get(sch, "dep_platform");
+
+        //gchar *depDepart   = json_object_get_string(json_object_object_get(sch, "dep_depart"));
+
+        hbox_c = gtk_hbox_new(FALSE, 5);
+        gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
+        set_label(hbox_c, lbl, 5 , json_object_get_string(objTime), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 10, json_object_get_string(objDest), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 7 , json_object_get_string(objBusno), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 8 , json_object_get_string(objStandard), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 7 , json_object_get_string(objPlatform), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
+        //set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, (*row[5] == '1')?CONTENT_COLOR:"#ff0000", FALSE, FALSE);
+        //g_printf("%s\t%s\t%s\t%s\n", depTime, depDest, depBusno, depStandard);
+        
+        json_object_put(sch);
+        
+      }
+
+      gtk_widget_show_all(win);
+      //g_print("Server: %s,\n%s\n", SERVER, sql_buf);
+
+      json_object_put(root);
+    }
   }
-  //gchar *sql_buf = "SELECT dep_time, dep_dest, dep_busno, dep_standard, dep_platform, (CASE WHEN dep_depart = 0 THEN ' ' WHEN dep_depart = 1 THEN 'เข้าชานชาลา' WHEN dep_depart = 2 THEN 'รถออก' END) as dep_status FROM dts_depart WHERE (STR_TO_DATE(dep_time, '%H:%i')) > (time(now() - INTERVAL 30 MINUTE)) and date(dep_datetime) = curdate() order by dep_time limit 0,9;";
-  //            "  (CASE ",
-  //            "    WHEN dep_depart = 0 THEN ' ' ",
-  //            "    WHEN dep_depart = 1 THEN 'เข้า' ",
-  //            "    WHEN dep_depart = 2 THEN 'ออก' ",
-  //            "  END) as dep_status ",
 
+  curl_easy_cleanup(curl);
+  free(chunk.memory);
+  curl_global_cleanup();
 
-  gchar *sql_buf;
-  sql_buf = g_strconcat(
-              "select ",
-              "  dep_time, dep_dest, dep_busno, dep_standard, dep_platform, dep_depart ", 
-              "FROM ",
-              "  dts_depart ",
-              "WHERE ",
-              "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
-              "  DATE_FORMAT(now()-interval 20 minute, '%Y-%m-%d %T') AND ",
-              "  dep_date = DATE(curdate()) ",
-              "ORDER BY dep_date, dep_time ", NULL);
-  
-  if (mysql_query(cnx_init, sql_buf) != 0L){
-    g_print("query error... \n");
-    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    LOG(ERROR, "Querry error.");
-    //exit(1);
-  }
-  LOG(INFO, "Query in displayLabel()");
-  // Add data from mysql to GtkListStore, store //  
-  result_set = mysql_store_result(cnx_init);
-  
-  // Remove all widget in container named vbox_c. //
-  gtk_container_foreach(GTK_CONTAINER(widget), (void*) gtk_widget_destroy, NULL);
+  //time_t now;
+  time(&now);
+  printf("out: %s", ctime(&now));
 
-  GtkWidget *lbl=NULL;
-  GtkWidget *hbox_c;
-
-  while ((row = mysql_fetch_row(result_set)) != 0L){
-	gchar *depStatus;
-	if (*row[5] == '1')
-	  depStatus = "เข้า";
-	else if (*row[5] == '2')
-	  depStatus = "ออก";
-	else
-	  depStatus = "";
-	  
-    hbox_c = gtk_hbox_new(FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
-    set_label(hbox_c, lbl, 5, row[0], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 10, row[1], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 7, row[2], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 8, row[3], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 7, row[4], FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-    set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, (*row[5] == '1')?CONTENT_COLOR:"#ff0000", FALSE, FALSE);
-  }
-
-  gtk_widget_show_all(win);
-  g_print("Server: %s,\n%s\n", SERVER, sql_buf);
-
-  mysql_free_result(result_set);
-  g_free(sql_buf);
-
-  db_close();
   threadID = g_timeout_add (10000, (GSourceFunc)displayLabel, widget);
 
   return TRUE;
@@ -193,25 +186,25 @@ int main(int argc, char *argv[]){
   GtkWidget *lblHeader = NULL;
   PangoFontDescription *dfDateTime;
   PangoFontDescription *dfName;
-  
+
   GdkPixbuf *image = NULL;
   GdkPixmap *background = NULL;
   GtkStyle *style = NULL;
   GdkColor NameColor;
   GdkColor TimeColor;
-  
+
   gchar home[256];
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
 
-  if (remove("dts.log") == 0)
-    g_print("Delete file dts.log successfully.\n");
-  fp= fopen("dts.log", "a+");
-  fprintf (fp, "Current dir: %s\n", home);
+  //if (remove("dts.log") == 0)
+  //  g_print("Delete file dts.log successfully.\n");
+  //fp= fopen("dts.log", "a+");
+  //fprintf (fp, "Current dir: %s\n", home);
 
   gtk_init(&argc, &argv);
-  
+
   // Read file dts.conf to setup color, font and font size.
   SERVER = config_get_string("dts.conf", "Server", "SERVER");
   BG_IMAGE = config_get_string("dts.conf", "Images", "BG_IMAGE");
@@ -228,7 +221,7 @@ int main(int argc, char *argv[]){
   gdk_pixbuf_render_pixmap_and_mask (image, &background, NULL, 0);
   style = gtk_style_new ();
   style->bg_pixmap [0] = background;
-  
+
   win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(win), "Schedule Panel");
   gtk_window_set_default_size(GTK_WINDOW(win), 400, 600);
@@ -236,7 +229,7 @@ int main(int argc, char *argv[]){
 
   gtk_widget_set_style (GTK_WIDGET(win), GTK_STYLE (style));
   gtk_window_set_transient_for (GTK_WINDOW (win), NULL);
- 
+
   gtk_window_fullscreen(GTK_WINDOW(win));
 
   icon = create_pixbuf("Digital-Signage.png");
@@ -244,16 +237,16 @@ int main(int argc, char *argv[]){
 
   vbox = gtk_vbox_new(FALSE, 1);
   gtk_container_add(GTK_CONTAINER(win), vbox);
-  
+
   hbox = gtk_hbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  
+
   lblName = gtk_label_new(TITLE_TEXT);
   lblDateTime = gtk_label_new("");
 
   dfDateTime = pango_font_description_from_string(TITLE_FONT);
   pango_font_description_set_size(dfDateTime, TITLE_SIZE*PANGO_SCALE);
-  
+
   dfName = pango_font_description_from_string(TITLE_FONT);
   pango_font_description_set_size(dfName, TITLE_SIZE*PANGO_SCALE);
   pango_font_description_set_weight(dfName, PANGO_WEIGHT_BOLD);
@@ -267,7 +260,7 @@ int main(int argc, char *argv[]){
   gtk_widget_modify_font(lblName, dfName);
   gtk_box_pack_start(GTK_BOX(hbox), lblName, FALSE, FALSE, 10);
   gtk_box_pack_end(GTK_BOX(hbox), lblDateTime, FALSE, FALSE, 20);
-  
+
   //header
   hbox = gtk_hbox_new(FALSE, 5);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE,0);
@@ -280,9 +273,9 @@ int main(int argc, char *argv[]){
 
   vbox_c = gtk_vbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(vbox), vbox_c, FALSE, FALSE,0);
-  
+
   //displayLabel(vbox_c);
-  
+
   g_timeout_add (1000, (GSourceFunc)update_time, lblDateTime);
   threadID = g_timeout_add (5000, (GSourceFunc)displayLabel, vbox_c);
 
@@ -298,8 +291,8 @@ int main(int argc, char *argv[]){
   gtk_widget_show_all(win);
   gtk_main();
 
-  fprintf(fp, "Normal ending program.\n");
-  fclose(fp);
+  //fprintf(fp, "Normal ending program.\n");
+  //fclose(fp);
 
   return 0;
 }
