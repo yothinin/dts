@@ -5,18 +5,15 @@
 // signal handler at runtime. See the Makefile for implementation.
 #include <stdio.h>
 #include <gtk/gtk.h>
-//~ #include <mysql.h>
+#include <mysql.h>
 #include <stdlib.h>
-#include <string.h>
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <glib/gprintf.h>
-#include <curl/curl.h>
-#include <json-c/json.h>
 #include "dts.h"
 
-//~ FILE *fp;
-//~ #define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
+FILE *fp;
+#define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
 
 //#include "ex_from_glade-res.c"
 
@@ -39,13 +36,12 @@ GtkWidget *btnDelete;
 
 gint dts_mode = 0; // 0 = Insert, 1 = Update
 gchar *SERVER;
+gchar *sql;
 
-//~ gchar *sql;
-
-//~ MYSQL *cnx_init;
-//~ MYSQL *cnx_db;
-//~ MYSQL_RES *result_set;
-//~ MYSQL_ROW row;
+MYSQL *cnx_init;
+MYSQL *cnx_db;
+MYSQL_RES *result_set;
+MYSQL_ROW row;
 
 typedef struct
 {
@@ -121,31 +117,6 @@ static Destination dest[] =
   {"962", "เชียงของ"},
 };
 
-struct MemoryStruct{
-  char *memory;
-  size_t size;
-};
-
-static size_t
-WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  size_t realsize = size * nmemb;
-  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-  mem->memory = realloc(mem->memory, mem->size+realsize + 1);
-
-  if (mem->memory == NULL){
-    // out of memory
-    printf("not enough memory (realloc returned NULL)\n");
-    return 0;
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
-
-  return realsize;
-}
-
 gchar 
 *config_get_string(gchar *file, gchar *group, gchar *key)
 {
@@ -166,73 +137,73 @@ gchar
   return val;
 }
 
-//~ void
-//~ db_init()
-//~ {
-  //~ g_print("Start connect to sql...\n");
-  //~ cnx_init = mysql_init(NULL);
-  //~ if (cnx_init == NULL){
-    //~ g_print("connect failed in mysql_init, \n");
-    //~ g_print("exit code: 1\n");
-    //~ exit(1);
-  //~ }
+void
+db_init()
+{
+  g_print("Start connect to sql...\n");
+  cnx_init = mysql_init(NULL);
+  if (cnx_init == NULL){
+    g_print("connect failed in mysql_init, \n");
+    g_print("exit code: 1\n");
+    exit(1);
+  }
 
-  //~ if (!mysql_set_character_set(cnx_init, "UTF8")){
-    //~ printf("New client character set: %s\n",
-           //~ mysql_character_set_name(cnx_init));
-  //~ }
-//~ }
+  if (!mysql_set_character_set(cnx_init, "UTF8")){
+    printf("New client character set: %s\n",
+           mysql_character_set_name(cnx_init));
+  }
+}
 
-//~ void
-//~ db_connect()
-//~ {
-  //~ SERVER = config_get_string("dts.conf", "Server", "SERVER");
-  //~ g_print("Connect to: %s\n", SERVER);
-  //~ int i = 0;
-  //~ do {
-    //~ cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
-    //~ g_print("Connect (code 2: %d)\n", i);
-  //~ } while (cnx_db == NULL);
-  //~ /*
-  //~ if (cnx_db == NULL){
-    //~ g_print("MySQL failure to connect to database...\n");
-    //~ g_print("Exit code: 2\n");
-    //~ g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    //~ exit(2);
-  //~ }
-  //~ */
+void
+db_connect()
+{
+  SERVER = config_get_string("dts.conf", "Server", "SERVER");
+  g_print("Connect to: %s\n", SERVER);
+  int i = 0;
+  do {
+    cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
+    g_print("Connect (code 2: %d)\n", i);
+  } while (cnx_db == NULL);
+  /*
+  if (cnx_db == NULL){
+    g_print("MySQL failure to connect to database...\n");
+    g_print("Exit code: 2\n");
+    g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    exit(2);
+  }
+  */
 
-  //~ g_print("Database connected.\n");
-//~ }
+  g_print("Database connected.\n");
+}
 
-//~ void
-//~ db_close()
-//~ {
-  //~ mysql_close(cnx_init);
-  //~ g_print("MySQL disconnected.\n");
-//~ }
+void
+db_close()
+{
+  mysql_close(cnx_init);
+  g_print("MySQL disconnected.\n");
+}
 
-//~ void
-//~ db_query(gchar *sql)
-//~ {
-  //~ db_init();
-  //~ db_connect();
-  //~ if (!mysql_set_character_set(cnx_init, "UTF8")){
-    //~ printf("New cslient character set: %s\n",
-           //~ mysql_character_set_name(cnx_init));
-  //~ }
+void
+db_query(gchar *sql)
+{
+  db_init();
+  db_connect();
+  if (!mysql_set_character_set(cnx_init, "UTF8")){
+    printf("New cslient character set: %s\n",
+           mysql_character_set_name(cnx_init));
+  }
 
-  //~ if (mysql_query(cnx_init, sql) != 0){
-    //~ g_print("Failure to insert to database.");
-    //~ g_print("Exit code: 3\n");
-    //~ g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    //~ g_print("%s\n", sql);
-    //~ LOG(ERROR, "Failure to insert to database. (3)");
-    //~ exit(3);
-  //~ }
-  //~ g_print("Insert data to mysql completed.\n");
-  //~ db_close();
-//~ }
+  if (mysql_query(cnx_init, sql) != 0){
+    g_print("Failure to insert to database.");
+    g_print("Exit code: 3\n");
+    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    g_print("%s\n", sql);
+    LOG(ERROR, "Failure to insert to database. (3)");
+    exit(3);
+  }
+  g_print("Insert data to mysql completed.\n");
+  db_close();
+}
 
 void setEntry()
 {
@@ -309,8 +280,8 @@ void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
           
-  //~ db_query(sql);
-  //~ db_liststore();
+  db_query(sql);
+  db_liststore();
   btnNewClicked(NULL, NULL);
 
   g_print("Clear depart status: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -347,8 +318,8 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
           
-  //~ db_query(sql);
-  //~ db_liststore();
+  db_query(sql);
+  db_liststore();
   btnNewClicked(NULL, NULL);
 
   g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -385,8 +356,8 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
           
-  //~ db_query(sql);
-  //~ db_liststore();
+  db_query(sql);
+  db_liststore();
   btnNewClicked(NULL, NULL);
 
   g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -542,7 +513,6 @@ void btnClicked(GtkWidget *widget, gpointer user_data)
 G_MODULE_EXPORT
 gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 {
- 
   g_print("btnSave clicked...\n");
 
   GDateTime *now = g_date_time_new_now_local();
@@ -581,17 +551,19 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   }
 
   //gchar buf_sql[256];
-  gchar url[500]="https://dts.bustecz.com/dts_api/";
+
   if (dts_mode == 0){
-    g_sprintf(url, "inssch.php");
-    //~ sql = g_strconcat("INSERT INTO dts_depart(", 
-                      //~ "dep_date, dep_time, dep_dest, dep_busno, dep_std_code, ", 
-                      //~ "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (",
-                      //~ "DATE(now()), ", 
-                      //~ "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
-                      //~ "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
-                      //~ "'", depStandard,                 "', ", "'", depPlatform, "', ", 
-                      //~ "'", depNote,                     "', ", "'", curTime, "')", NULL);
+    //g_sprintf(buf_sql, "INSERT INTO dts_depart (dep_time, dep_dest, dep_busno, dep_std_code, dep_standard, dep_platform, dep_note, dep_datetime) VALUES ('%s:%s', '%s', '%s-%s', '%s', '%s', '%s', '%s', '%s')", depHour, depMinute, depDest, depRoute, depBusNo, depStdCode, depStandard, depPlatform, depNote, curTime);
+
+    sql = g_strconcat("INSERT INTO dts_depart(", 
+                      "dep_date, dep_time, dep_dest, dep_busno, dep_std_code, ", 
+                      "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (",
+                      "DATE(now()), ", 
+                      "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
+                      "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
+                      "'", depStandard,                 "', ", "'", depPlatform, "', ", 
+                      "'", depNote,                     "', ", "'", curTime, "')", NULL);
+                      
 
     GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     GtkTreeIter iter;
@@ -607,35 +579,25 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     g_free(depBus);
 
   }else{
-    g_sprintf(url, "updsch.php");
-
-    //~ sql = g_strconcat(
-          //~ "UPDATE dts_depart SET ",
-          //~ "dep_time = '"    , depHour, ":", depMinute, "', ",
-          //~ "dep_platform = '", depPlatform            , "', ", 
-          //~ "dep_note = '"    , depNote                , "', ",
-          //~ "dep_datetime = '", curTime                , "' ",
-          //~ "WHERE ", 
-          //~ "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          //~ "dep_std_code", " = '", depStdCode, "' AND ", 
-          //~ "date(dep_datetime) = curdate();", 
-          //~ NULL);
+    sql = g_strconcat(
+          "UPDATE dts_depart SET ",
+          "dep_time = '"    , depHour, ":", depMinute, "', ",
+          "dep_platform = '", depPlatform            , "', ", 
+          "dep_note = '"    , depNote                , "', ",
+          "dep_datetime = '", curTime                , "' ",
+          "WHERE ", 
+          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          "dep_std_code", " = '", depStdCode, "' AND ", 
+          "date(dep_datetime) = curdate();", 
+          NULL);
                
   }
 
-  char postData[] = g_strconcat(
-                      "depDate=DATE(NOW())&",
-                      "depTime=",     depHour,     ":", depMinute, "&",
-                      "depDest=",     depDest,     "&",
-                      "depRoute=",    depRoute,    "&",
-                      "depBusno=",    depBusNo,    "&",
-                      "depStdCode=",  depStdCode,  "&",
-                      "depStandard=", depStandard, "&",
-                      "depPlatform=", depPlatform, "&",
-                      "depNote=",     depNote,     "&",
-                      "depTime=",     curTime,     NULL
-                    );
-  g_print(postData);
+  //db_insert(buf_sql);
+  db_query(sql);
+
+  //g_print("%s\n", buf_sql);
+  g_print("%s\n", sql);
 
   clearEntry();
 
@@ -652,7 +614,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   gtk_widget_grab_focus(cmbDest);
   
   g_free(curTime);
-  //~ g_free(sql);
+  g_free(sql);
 
   db_liststore();
   btnNewClicked(NULL, NULL);
@@ -689,7 +651,7 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
           
-  //~ db_query(sql);
+  db_query(sql);
   db_liststore();
   btnNewClicked(NULL, NULL);
 
@@ -802,96 +764,55 @@ db_liststore()
   GtkListStore *store;
   GtkTreeIter iter1;
   
-  //~ gchar *sql_buf;
-  //~ sql_buf = g_strconcat(
-              //~ "select ",
-              //~ "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, ", 
-               //~ "  (CASE ",
-              //~ "    WHEN dep_depart = 0 THEN ' ' ",
-              //~ "    WHEN dep_depart = 1 THEN 'เข้า' ",
-              //~ "    WHEN dep_depart = 2 THEN 'ออก' ",
-              //~ "  END) as dep_status , ",
-              //~ "  dep_note "
-              //~ "FROM ",
-              //~ "  dts_depart ",
-              //~ "WHERE ",
-              //~ "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
-              //~ "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
-              //~ "  dep_date = DATE(curdate()) ",
-              //~ "ORDER BY dep_date, dep_time ", NULL);
+  db_init();
+  db_connect();
+  
+  mysql_query(cnx_init, "SET character_set_results='utf8'");
+  gchar *sql_buf;
+  sql_buf = g_strconcat(
+              "select ",
+              "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, ", 
+              "  (CASE ",
+              "    WHEN dep_depart = 0 THEN ' ' ",
+              "    WHEN dep_depart = 1 THEN 'เข้า' ",
+              "    WHEN dep_depart = 2 THEN 'ออก' ",
+              "  END) as dep_status , ",
+              "  dep_note "
+              "FROM ",
+              "  dts_depart ",
+              "WHERE ",
+              "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
+              "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
+              "  dep_date = DATE(curdate()) ",
+              "ORDER BY dep_date, dep_time ", NULL);
   
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
   
   gtk_list_store_clear(store);
-  //g_print("%s\n", sql_buf);
+  g_print("%s\n", sql_buf);
 
-  char url[] = "https://dts.bustecz.com/dts_api/getsch.php";
-  //char postData[] = "date=2022-05-06&station=10001&route=18";
-
-  CURL *curl;
-  CURLcode res;
-
-  struct MemoryStruct chunk;
-  chunk.memory = malloc(1);
-  chunk.size = 0;
-
-  curl_global_init(CURL_GLOBAL_ALL);
-  curl = curl_easy_init();
-
-  if (curl){
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    //~ curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    else{
-      json_object *root = json_tokener_parse(chunk.memory);
-      //const char *str;
-      int i;
-      int n = json_object_array_length(root);
-      for (i = 0; i<n; i++){
-        const char *str = json_object_get_string(json_object_array_get_idx(root, i));
-        g_print(str);
-        json_object *sch = json_tokener_parse(str);
-        json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart;
-
-        json_object_object_get_ex(sch, "dep_time", &objTime);
-        json_object_object_get_ex(sch, "dep_dest", &objDest);
-        json_object_object_get_ex(sch, "dep_busno", &objBusno);
-        json_object_object_get_ex(sch, "dep_standard", &objStandard);
-        json_object_object_get_ex(sch, "dep_platform", &objPlatform);
-        json_object_object_get_ex(sch, "dep_depart", &objDepart);
-        
-        gtk_list_store_append(store, &iter1);
-        gtk_list_store_set(store, &iter1, 
-          0, json_object_get_string(objTime),
-          1, json_object_get_string(objDest),
-          2, json_object_get_string(objBusno),
-          3, json_object_get_string(objStandard),
-          4, json_object_get_string(objPlatform),
-          5, json_object_get_string(objDepart), 
-          -1
-        );
-        json_object_put(objTime);
-        json_object_put(objDest);
-        json_object_put(objBusno);
-        json_object_put(objStandard);
-        json_object_put(objPlatform);
-        json_object_put(objDepart);
-      }
-      json_object_put(root);
-    }
-
+  if (mysql_query(cnx_init, sql_buf) != 0L){
+    g_print("query error... \n");
+    g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
+    LOG(ERROR, "Query error. (1)");
+    LOG(INFO, sql_buf);
+    exit(1);
   }
-
+  
+  // Add data from mysql to GtkListStore, store //  
+  result_set = mysql_store_result(cnx_init);
+  while ((row = mysql_fetch_row(result_set)) != 0L){
+    gtk_list_store_append(store, &iter1);
+    int n;
+    for (n = 0; n < mysql_num_fields(result_set); n++){
+      gtk_list_store_set(store, &iter1, n, row[n], -1);
+    }
+  }
   GtkTreeSortable *sortable;
   sortable = GTK_TREE_SORTABLE(store);
   gtk_tree_sortable_set_sort_column_id(sortable, 3, GTK_SORT_ASCENDING);
   
+  mysql_free_result(result_set);
 }
 
 G_MODULE_EXPORT
@@ -909,7 +830,7 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
 
 int main(int argc, char *argv[])
 {
-  //~ fp= fopen("dts.log", "a+");
+  fp= fopen("dts.log", "a+");
 
   GdkPixbuf *icon;
   GSList *lst, *objList;
@@ -922,7 +843,7 @@ int main(int argc, char *argv[])
   g_print("Home: %s\n", home);
   g_chdir(home);
 
-  //~ g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "g_log() example...");
+  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "g_log() example...");
 
   icon = create_pixbuf("Digital-Signage.png");
 
@@ -935,12 +856,12 @@ int main(int argc, char *argv[])
   //builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
 
-  objList = gtk_builder_get_objects(builder);
+    objList = gtk_builder_get_objects(builder);
 
-  g_print("%p\n", objList);
-  for (lst = objList; lst != NULL; lst = lst->next){
-    g_print("%p\n", (char*)(lst->data));
-  }
+    g_print("%p\n", objList);
+    for (lst = objList; lst != NULL; lst = lst->next){
+      g_print("%p\n", (char*)(lst->data));
+    }
 
   window = (GtkWidget*)gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
@@ -994,7 +915,7 @@ int main(int argc, char *argv[])
   g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
   gtk_main();
 
-  //~ fclose(fp);
+  fclose(fp);
 
   return 0;
 }
