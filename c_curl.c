@@ -10,12 +10,14 @@ struct MemoryStruct{
   size_t size;
 };
 
+struct MemoryStruct chunk;
+
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   size_t realsize = size * nmemb;
   struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-  mem->memory = realloc(mem->memory, mem->size+realsize + 1);
+  mem->memory = realloc(mem->memory, mem->size+realsize + 1); //Resize memory by realloc function.
 
   if (mem->memory == NULL){
     // out of memory
@@ -30,23 +32,13 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
-
-int
-main(int argc, char **argv)
+int execApi(char url[], char postData[])
 {
-  char url[] = "https://dts.bustecz.com/dts_api/getsch.php";
-  char postData[] = "date=2022-05-06&station=10001&route=18";
-
   CURL *curl;
   CURLcode res;
-
-  struct MemoryStruct chunk;
-  chunk.memory = malloc(1);
-  chunk.size = 0;
-
+ 
   curl_global_init(CURL_GLOBAL_ALL);
   curl = curl_easy_init();
-
   if (curl){
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
@@ -57,72 +49,66 @@ main(int argc, char **argv)
     res = curl_easy_perform(curl);
     if (res != CURLE_OK){
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }else{
-      //printf("result:\n%s\n", chunk.memory);
-
-      json_object *root = json_tokener_parse(chunk.memory);
-
-      const char *str;
-      int i;
-      int n = json_object_array_length(root);
-      for (i = 0; i<n; i++){
-        str = json_object_get_string(json_object_array_get_idx(root, i));
-        json_object *sch = json_tokener_parse(str);
-        /*
-        json_object *depTime = json_object_object_get(sch, "dep_time");
-        json_object *depDest = json_object_object_get(sch, "dep_dest");
-        json_object *depBusno = json_object_object_get(sch, "dep_busno");
-        json_object *depStandard = json_object_object_get(sch, "dep_standard");
-        json_object *depPlatform = json_object_object_get(sch, "dep_platform");
-        json_object *depDepart = json_object_object_get(sch, "dep_depart");
-        printf("%s\t", json_object_get_string(depTime));
-        printf("%s\t", json_object_get_string(depDest));
-        printf("%s\t", json_object_get_string(depBusno));
-        printf("%s\t", json_object_get_string(depStandard));
-        printf("%s\t", json_object_get_string(depPlatform));
-        printf("%s\n", json_object_get_string(depDepart));
-
-        json_object_put(sch);
-        json_object_put(depTime);
-        json_object_put(depDest);
-        json_object_put(depBusno);
-        json_object_put(depStandard);
-        json_object_put(depPlatform);
-        json_object_put(depDepart);
-        */
-
-        json_object *objTime = json_object_object_get(sch, "dep_time");
-        json_object *objDest = json_object_object_get(sch, "dep_dest");
-        json_object *objBusno = json_object_object_get(sch, "dep_busno");
-        json_object *objStandard = json_object_object_get(sch, "dep_standard");
-        json_object *objPlatform = json_object_object_get(sch, "dep_platform");
-        json_object *objDepart = json_object_object_get(sch, "dep_depart");
-
-        printf("%s\t", json_object_get_string(objTime));
-        printf("%s\t", json_object_get_string(objDest));
-        printf("%s\t", json_object_get_string(objBusno));
-        printf("%s\t", json_object_get_string(objStandard));
-        printf("%s\t", json_object_get_string(objPlatform));
-        printf("%s\n", json_object_get_string(objDepart));
-
-        json_object_put(sch);
-        json_object_put(objTime);
-        json_object_put(objDest);
-        json_object_put(objBusno);
-        json_object_put(objStandard);
-        json_object_put(objPlatform);
-        json_object_put(objDepart);
-
-      }
-
-      json_object_put(root);
-
     }
   }
-
+  
   curl_easy_cleanup(curl);
-  free(chunk.memory);
   curl_global_cleanup();
+
+  return res;
+}
+
+int
+main(int argc, char **argv)
+{
+  char url[] = "https://dts.bustecz.com/dts_api/addsch.php";
+
+  char postData[] =  "depTime=20:30&depDest=เชียงใหม่&depBusno=18-45&depStdCode=13&depStandard=ม.1พ&depPlatform=&depNote=&depDepart=0";
+  
+  printf("posdata[] = %s\n", postData);
+  
+  chunk.memory = malloc(1); // Allocate 1 byte and resize later.
+  chunk.size = 0;
+
+  if (execApi(url, postData) == 0){
+    printf("%s\n", chunk.memory);
+    json_object *root = json_tokener_parse(chunk.memory);
+    const char *str;
+    int i;
+    int n = json_object_array_length(root);
+    for (i = 0; i<n; i++){
+      str = json_object_get_string(json_object_array_get_idx(root, i));
+      json_object *sch = json_tokener_parse(str);
+      
+      json_object *objStatus;
+      json_object_object_get_ex(sch, "Status", &objStatus); 
+      printf("%s\n", json_object_get_string(objStatus));
+      
+      json_object_put(objStatus);
+      
+      /*
+      json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart;
+      json_object_object_get_ex(sch, "dep_time", &objTime);
+      json_object_object_get_ex(sch, "dep_dest", &objDest);
+      json_object_object_get_ex(sch, "dep_busno", &objBusno);
+      json_object_object_get_ex(sch, "dep_standard", &objStandard);
+      json_object_object_get_ex(sch, "dep_platform", &objPlatform);
+      json_object_object_get_ex(sch, "dep_depart", &objDepart);
+
+      printf("%s\t", json_object_get_string(objTime));
+      printf("%s\t", json_object_get_string(objDest));
+      printf("%s\t", json_object_get_string(objBusno));
+      printf("%s\t", json_object_get_string(objStandard));
+      printf("%s\t", json_object_get_string(objPlatform));
+      printf("%s\n", json_object_get_string(objDepart));
+      */
+
+    }
+    json_object_put(root);
+
+  }
+
+  free(chunk.memory); 
 
   return 0;
 }
