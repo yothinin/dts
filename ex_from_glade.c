@@ -582,18 +582,10 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   }
 
   //gchar buf_sql[256];
-  gchar url[500];
+  gchar *url;
   if (dts_mode == 0){
-    g_sprintf(url, "https://dts.bustecz.com/dts_api/addsch.php");
-    //~ sql = g_strconcat("INSERT INTO dts_depart(", 
-                      //~ "dep_date, dep_time, dep_dest, dep_busno, dep_std_code, ", 
-                      //~ "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (",
-                      //~ "DATE(now()), ", 
-                      //~ "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
-                      //~ "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
-                      //~ "'", depStandard,                 "', ", "'", depPlatform, "', ", 
-                      //~ "'", depNote,                     "', ", "'", curTime, "')", NULL);
-
+    url = "https://dts.bustecz.com/dts_api/addsch.php";
+    /*
     GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     GtkTreeIter iter;
 
@@ -607,21 +599,10 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
     g_free(depTime);
     g_free(depBus);
+    */
 
   }else{
-    g_sprintf(url, "https://dts.bustecz.com/dts_api/updsch.php");
-
-    //~ sql = g_strconcat(
-          //~ "UPDATE dts_depart SET ",
-          //~ "dep_time = '"    , depHour, ":", depMinute, "', ",
-          //~ "dep_platform = '", depPlatform            , "', ",
-          //~ "dep_note = '"    , depNote                , "', ",
-          //~ "dep_datetime = '", curTime                , "' ",
-          //~ "WHERE ", 
-          //~ "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
-          //~ "dep_std_code", " = '", depStdCode, "' AND ",
-          //~ "date(dep_datetime) = curdate();",
-          //~ NULL);
+    url = "https://dts.bustecz.com/dts_api/updsch.php";
   }
 
   gchar *postData = g_strconcat(
@@ -639,7 +620,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   g_print("url=%s\nposData=%s\n", url, postData);
   
   if (execApi(url, postData) == 0)
-    g_print("Status: insert completed.\n");
+    g_print("Status: completed.\n");
   ////g_print("Staus = %s\n", execJson("Status")";
   
   g_free(postData);
@@ -697,7 +678,7 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
   */
-  
+  gchar *url = "https://dts.bustecz.com/dts_api/delsch.php";
   gchar *posData;
   posData = g_strconcat(
     "depBusno=",    depRoute  , "-", depBusNo, "&",
@@ -706,8 +687,11 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
     NULL
   );
   g_print("%s\n", posData);
-  g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
 
+  if (execApi(url, posData) == 0){
+    g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  }
+  
   //~ db_query(sql);
   db_liststore();
   btnNewClicked(NULL, NULL);
@@ -771,8 +755,6 @@ G_MODULE_EXPORT
 void btnNewClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnNew clicked\n");
-
-  g_print("รถเข้าชานชาลา\n");
   setEntry();
   clearSelected();
   clearEntry();
@@ -814,7 +796,7 @@ GdkPixbuf
   return pixbuf;
 }
 
-int execApi(char url[], char postData[])
+int execApi(char *url, char *postData)
 {
   CURL *curl;
   CURLcode res;
@@ -834,6 +816,7 @@ int execApi(char url[], char postData[])
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
     res = curl_easy_perform(curl);
+    g_printf("%s\n", chunk.memory);
   }
   
   return res;
@@ -868,8 +851,8 @@ db_liststore()
   gtk_list_store_clear(store);
   //g_print("%s\n", sql_buf);
 
-  char url[] = "https://dts.bustecz.com/dts_api/getsch-all.php";
-  char postData[] = "";
+  char *url = "https://dts.bustecz.com/dts_api/getsch-all.php";
+  char *postData = "";
 
   ///call function and return res.
   if (execApi(url, postData) == CURLE_OK){ 

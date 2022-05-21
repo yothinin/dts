@@ -61,9 +61,8 @@ int execApi(char url[], char postData[])
 int
 main(int argc, char **argv)
 {
-  char url[] = "https://dts.bustecz.com/dts_api/addsch.php";
-
-  char postData[] =  "depTime=20:30&depDest=เชียงใหม่&depBusno=18-45&depStdCode=13&depStandard=ม.1พ&depPlatform=&depNote=&depDepart=0";
+  char url[] = "https://dts.bustecz.com/dts_api/delsch.php";
+  char postData[] =  "depBusno=3-999&depStdCode=11&depDatetime=2022-05-21";
   
   printf("posdata[] = %s\n", postData);
   
