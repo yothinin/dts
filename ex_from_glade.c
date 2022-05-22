@@ -827,37 +827,19 @@ db_liststore()
 {
   GtkListStore *store;
   GtkTreeIter iter1;
-  
-  //~ gchar *sql_buf;
-  //~ sql_buf = g_strconcat(
-              //~ "select ",
-              //~ "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, ", 
-               //~ "  (CASE ",
-              //~ "    WHEN dep_depart = 0 THEN ' ' ",
-              //~ "    WHEN dep_depart = 1 THEN 'เข้า' ",
-              //~ "    WHEN dep_depart = 2 THEN 'ออก' ",
-              //~ "  END) as dep_status , ",
-              //~ "  dep_note "
-              //~ "FROM ",
-              //~ "  dts_depart ",
-              //~ "WHERE ",
-              //~ "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
-              //~ "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
-              //~ "  dep_date = DATE(curdate()) ",
-              //~ "ORDER BY dep_date, dep_time ", NULL);
-  
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
-  
   gtk_list_store_clear(store);
-  //g_print("%s\n", sql_buf);
+
+  GtkTreeSortable *sortable;
+  sortable = GTK_TREE_SORTABLE(store);
+  gtk_tree_sortable_set_sort_column_id(sortable, 3, GTK_SORT_ASCENDING);
 
   char *url = "https://dts.bustecz.com/dts_api/getsch-all.php";
   char *postData = "";
 
-  ///call function and return res.
+  // call execApi() function and return res.
   if (execApi(url, postData) == CURLE_OK){ 
     json_object *root = json_tokener_parse(chunk.memory);
-    //const char *str;
     int i;
     int n = json_object_array_length(root);
     for (i = 0; i<n; i++){
@@ -894,11 +876,6 @@ db_liststore()
     }
     json_object_put(root);
   }
-
-  GtkTreeSortable *sortable;
-  sortable = GTK_TREE_SORTABLE(store);
-  gtk_tree_sortable_set_sort_column_id(sortable, 3, GTK_SORT_ASCENDING);
-  
 }
 
 G_MODULE_EXPORT
@@ -916,11 +893,8 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
 
 int main(int argc, char *argv[])
 {
-  //~ fp= fopen("dts.log", "a+");
-
   GdkPixbuf *icon;
   GSList *lst, *objList;
-  //GObject* window;
   GtkListStore *store_std, *store_dest;
   GtkTreeIter iter2, iter3;
 
@@ -928,8 +902,6 @@ int main(int argc, char *argv[])
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
-
-  //~ g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "g_log() example...");
 
   icon = create_pixbuf("Digital-Signage.png");
 
@@ -1000,8 +972,6 @@ int main(int argc, char *argv[])
 
   g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
   gtk_main();
-
-  //~ fclose(fp);
 
   return 0;
 }
