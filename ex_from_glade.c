@@ -77,8 +77,8 @@ Destination;
 enum
 {
   COL_BUSNO,
-  COL_DEST,
   COL_STANDARD,
+  COL_DEST,
   COL_TIME,
   COL_PLATFORM,
   COL_STATUS,
@@ -125,6 +125,8 @@ struct MemoryStruct{
   char *memory;
   size_t size;
 };
+
+struct MemoryStruct chunk;
 
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -414,9 +416,9 @@ onTreeViewRowActivated (GtkTreeView *view,
 
   //if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(user_data), &model, &iter)){
   if (gtk_tree_selection_get_selected(selection, &model, &iter)){
-    gtk_tree_model_get(model, &iter, 0, &time, -1);
-    gtk_tree_model_get(model, &iter, 1, &dest, -1);
-    gtk_tree_model_get(model, &iter, 2, &busno, -1);
+    gtk_tree_model_get(model, &iter, 0, &busno, -1);
+    gtk_tree_model_get(model, &iter, 2, &dest, -1);
+    gtk_tree_model_get(model, &iter, 3, &time, -1);
     g_print ("คลิกเที่ยวรถ: %s\n", time);
   }
 
@@ -542,7 +544,6 @@ void btnClicked(GtkWidget *widget, gpointer user_data)
 G_MODULE_EXPORT
 gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 {
- 
   g_print("btnSave clicked...\n");
 
   GDateTime *now = g_date_time_new_now_local();
@@ -581,18 +582,10 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   }
 
   //gchar buf_sql[256];
-  gchar url[500]="https://dts.bustecz.com/dts_api/";
+  gchar *url;
   if (dts_mode == 0){
-    g_sprintf(url, "inssch.php");
-    //~ sql = g_strconcat("INSERT INTO dts_depart(", 
-                      //~ "dep_date, dep_time, dep_dest, dep_busno, dep_std_code, ", 
-                      //~ "dep_standard, dep_platform, dep_note, dep_datetime) VALUES (",
-                      //~ "DATE(now()), ", 
-                      //~ "'", depHour,     ":", depMinute, "', ", "'", depDest   , "', ", 
-                      //~ "'", depRoute,    "-", depBusNo , "', ", "'", depStdCode, "', ", 
-                      //~ "'", depStandard,                 "', ", "'", depPlatform, "', ", 
-                      //~ "'", depNote,                     "', ", "'", curTime, "')", NULL);
-
+    url = "https://dts.bustecz.com/dts_api/addsch.php";
+    /*
     GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
     GtkTreeIter iter;
 
@@ -601,41 +594,36 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
     gtk_list_store_append(liststore, &iter);
     gtk_list_store_set(
-      liststore, &iter, COL_BUSNO, depBus, COL_DEST, depDest, COL_STANDARD, depStandard, COL_TIME, depTime, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1);
+      liststore, &iter, COL_BUSNO, depBus, COL_DEST, depDest, COL_STANDARD, depStandard, COL_TIME, depTime, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1
+    );
 
     g_free(depTime);
     g_free(depBus);
+    */
 
   }else{
-    g_sprintf(url, "updsch.php");
-
-    //~ sql = g_strconcat(
-          //~ "UPDATE dts_depart SET ",
-          //~ "dep_time = '"    , depHour, ":", depMinute, "', ",
-          //~ "dep_platform = '", depPlatform            , "', ", 
-          //~ "dep_note = '"    , depNote                , "', ",
-          //~ "dep_datetime = '", curTime                , "' ",
-          //~ "WHERE ", 
-          //~ "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          //~ "dep_std_code", " = '", depStdCode, "' AND ", 
-          //~ "date(dep_datetime) = curdate();", 
-          //~ NULL);
-               
+    url = "https://dts.bustecz.com/dts_api/updsch.php";
   }
 
-  char postData[] = g_strconcat(
-                      "depDate=DATE(NOW())&",
+  gchar *postData = g_strconcat(
                       "depTime=",     depHour,     ":", depMinute, "&",
                       "depDest=",     depDest,     "&",
-                      "depRoute=",    depRoute,    "&",
-                      "depBusno=",    depBusNo,    "&",
+                      "depBusno=",    depRoute,    "-", depBusNo,  "&",
                       "depStdCode=",  depStdCode,  "&",
                       "depStandard=", depStandard, "&",
                       "depPlatform=", depPlatform, "&",
                       "depNote=",     depNote,     "&",
-                      "depTime=",     curTime,     NULL
+                      "depDepart=",   "0",
+                      NULL
                     );
-  g_print(postData);
+
+  g_print("url=%s\nposData=%s\n", url, postData);
+  
+  if (execApi(url, postData) == 0)
+    g_print("Status: completed.\n");
+  ////g_print("Staus = %s\n", execJson("Status")";
+  
+  g_free(postData);
 
   clearEntry();
 
@@ -680,6 +668,7 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
+  /*
   gchar *sql;
   sql = g_strconcat(
           "DELETE FROM dts_depart ",
@@ -688,13 +677,26 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
           "dep_std_code", " = '", depStdCode, "' AND ",
           "date(dep_datetime) = '", curDate , "'; ",
           NULL);
-          
+  */
+  gchar *url = "https://dts.bustecz.com/dts_api/delsch.php";
+  gchar *posData;
+  posData = g_strconcat(
+    "depBusno=",    depRoute  , "-", depBusNo, "&",
+    "depStdCode=",  depStdCode, "&",
+    "depDatetime=", curDate   ,
+    NULL
+  );
+  g_print("%s\n", posData);
+
+  if (execApi(url, posData) == 0){
+    g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  }
+  
   //~ db_query(sql);
   db_liststore();
   btnNewClicked(NULL, NULL);
 
-  g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
-  g_print(sql);  
+  //g_print(sql);  
 }
 
 G_MODULE_EXPORT
@@ -753,8 +755,6 @@ G_MODULE_EXPORT
 void btnNewClicked(GtkWidget *widget, gpointer user_data)
 {
   g_print("btnNew clicked\n");
-
-  g_print("รถเข้าชานชาลา\n");
   setEntry();
   clearSelected();
   clearEntry();
@@ -796,42 +796,12 @@ GdkPixbuf
   return pixbuf;
 }
 
-void
-db_liststore()
+int execApi(char *url, char *postData)
 {
-  GtkListStore *store;
-  GtkTreeIter iter1;
-  
-  //~ gchar *sql_buf;
-  //~ sql_buf = g_strconcat(
-              //~ "select ",
-              //~ "  dep_busno, dep_dest, dep_standard, dep_time, dep_platform, ", 
-               //~ "  (CASE ",
-              //~ "    WHEN dep_depart = 0 THEN ' ' ",
-              //~ "    WHEN dep_depart = 1 THEN 'เข้า' ",
-              //~ "    WHEN dep_depart = 2 THEN 'ออก' ",
-              //~ "  END) as dep_status , ",
-              //~ "  dep_note "
-              //~ "FROM ",
-              //~ "  dts_depart ",
-              //~ "WHERE ",
-              //~ "  DATE_FORMAT(CONCAT(dep_date, ' ', dep_time), '%Y-%m-%d %T') > ",
-              //~ "  DATE_FORMAT(now()-interval 30 minute, '%Y-%m-%d %T') AND ",
-              //~ "  dep_date = DATE(curdate()) ",
-              //~ "ORDER BY dep_date, dep_time ", NULL);
-  
-  store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
-  
-  gtk_list_store_clear(store);
-  //g_print("%s\n", sql_buf);
-
-  char url[] = "https://dts.bustecz.com/dts_api/getsch.php";
-  //char postData[] = "date=2022-05-06&station=10001&route=18";
-
   CURL *curl;
   CURLcode res;
 
-  struct MemoryStruct chunk;
+//  struct MemoryStruct chunk;
   chunk.memory = malloc(1);
   chunk.size = 0;
 
@@ -840,58 +810,72 @@ db_liststore()
 
   if (curl){
     curl_easy_setopt(curl, CURLOPT_URL, url);
-    //~ curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
     res = curl_easy_perform(curl);
-    if (res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    else{
-      json_object *root = json_tokener_parse(chunk.memory);
-      //const char *str;
-      int i;
-      int n = json_object_array_length(root);
-      for (i = 0; i<n; i++){
-        const char *str = json_object_get_string(json_object_array_get_idx(root, i));
-        g_print(str);
-        json_object *sch = json_tokener_parse(str);
-        json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart;
-
-        json_object_object_get_ex(sch, "dep_time", &objTime);
-        json_object_object_get_ex(sch, "dep_dest", &objDest);
-        json_object_object_get_ex(sch, "dep_busno", &objBusno);
-        json_object_object_get_ex(sch, "dep_standard", &objStandard);
-        json_object_object_get_ex(sch, "dep_platform", &objPlatform);
-        json_object_object_get_ex(sch, "dep_depart", &objDepart);
-        
-        gtk_list_store_append(store, &iter1);
-        gtk_list_store_set(store, &iter1, 
-          0, json_object_get_string(objTime),
-          1, json_object_get_string(objDest),
-          2, json_object_get_string(objBusno),
-          3, json_object_get_string(objStandard),
-          4, json_object_get_string(objPlatform),
-          5, json_object_get_string(objDepart), 
-          -1
-        );
-        json_object_put(objTime);
-        json_object_put(objDest);
-        json_object_put(objBusno);
-        json_object_put(objStandard);
-        json_object_put(objPlatform);
-        json_object_put(objDepart);
-      }
-      json_object_put(root);
-    }
-
+    g_printf("%s\n", chunk.memory);
   }
+  
+  return res;
+}
+
+void
+db_liststore()
+{
+  GtkListStore *store;
+  GtkTreeIter iter1;
+  store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
+  gtk_list_store_clear(store);
 
   GtkTreeSortable *sortable;
   sortable = GTK_TREE_SORTABLE(store);
   gtk_tree_sortable_set_sort_column_id(sortable, 3, GTK_SORT_ASCENDING);
-  
+
+  char *url = "https://dts.bustecz.com/dts_api/getsch-all.php";
+  char *postData = "";
+
+  // call execApi() function and return res.
+  if (execApi(url, postData) == CURLE_OK){ 
+    json_object *root = json_tokener_parse(chunk.memory);
+    int i;
+    int n = json_object_array_length(root);
+    for (i = 0; i<n; i++){
+      const char *str = json_object_get_string(json_object_array_get_idx(root, i));
+      g_print(str);
+      json_object *sch = json_tokener_parse(str);
+      json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart;
+
+      json_object_object_get_ex(sch, "dep_time", &objTime);
+      json_object_object_get_ex(sch, "dep_dest", &objDest);
+      json_object_object_get_ex(sch, "dep_busno", &objBusno);
+      json_object_object_get_ex(sch, "dep_standard", &objStandard);
+      json_object_object_get_ex(sch, "dep_platform", &objPlatform);
+      json_object_object_get_ex(sch, "dep_depart", &objDepart);
+      
+      gtk_list_store_append(store, &iter1);
+      gtk_list_store_set(store, &iter1, 
+        0, json_object_get_string(objBusno),
+        1, json_object_get_string(objStandard),
+        2, json_object_get_string(objDest),
+        3, json_object_get_string(objTime),
+        4, json_object_get_string(objPlatform),
+        5, json_object_get_string(objDepart), 
+        -1
+      );
+
+      json_object_put(objTime);
+      json_object_put(objDest);
+      json_object_put(objBusno);
+      json_object_put(objStandard);
+      json_object_put(objPlatform);
+      json_object_put(objDepart);
+
+    }
+    json_object_put(root);
+  }
 }
 
 G_MODULE_EXPORT
@@ -909,11 +893,8 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
 
 int main(int argc, char *argv[])
 {
-  //~ fp= fopen("dts.log", "a+");
-
   GdkPixbuf *icon;
   GSList *lst, *objList;
-  //GObject* window;
   GtkListStore *store_std, *store_dest;
   GtkTreeIter iter2, iter3;
 
@@ -921,8 +902,6 @@ int main(int argc, char *argv[])
   g_sprintf(home, "%s/%s", g_get_home_dir(), "projects/dts");
   g_print("Home: %s\n", home);
   g_chdir(home);
-
-  //~ g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, "g_log() example...");
 
   icon = create_pixbuf("Digital-Signage.png");
 
@@ -946,7 +925,7 @@ int main(int argc, char *argv[])
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
   //gtk_window_maximize(GTK_WINDOW(window));
-  gtk_window_fullscreen(GTK_WINDOW(window));
+  //gtk_window_fullscreen(GTK_WINDOW(window));
   db_liststore();
 
   int i;
@@ -993,8 +972,6 @@ int main(int argc, char *argv[])
 
   g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
   gtk_main();
-
-  //~ fclose(fp);
 
   return 0;
 }
