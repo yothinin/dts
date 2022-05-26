@@ -62,7 +62,7 @@ int
 main(int argc, char **argv)
 {
   char url[] = "...";
-  char postData[] =  "depBusno=3-999&depStdCode=11&depDatetime=2022-05-21";
+  char postData[] =  "";
   
   printf("posdata[] = %s\n", postData);
   
