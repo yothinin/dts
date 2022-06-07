@@ -169,74 +169,6 @@ gchar
   return val;
 }
 
-//~ void
-//~ db_init()
-//~ {
-  //~ g_print("Start connect to sql...\n");
-  //~ cnx_init = mysql_init(NULL);
-  //~ if (cnx_init == NULL){
-    //~ g_print("connect failed in mysql_init, \n");
-    //~ g_print("exit code: 1\n");
-    //~ exit(1);
-  //~ }
-
-  //~ if (!mysql_set_character_set(cnx_init, "UTF8")){
-    //~ printf("New client character set: %s\n",
-           //~ mysql_character_set_name(cnx_init));
-  //~ }
-//~ }
-
-//~ void
-//~ db_connect()
-//~ {
-  //~ SERVER = config_get_string("dts.conf", "Server", "SERVER");
-  //~ g_print("Connect to: %s\n", SERVER);
-  //~ int i = 0;
-  //~ do {
-    //~ cnx_db = mysql_real_connect(cnx_init, SERVER, "orangepi_w", "0rangePi", "dts", 3306, NULL, 0);
-    //~ g_print("Connect (code 2: %d)\n", i);
-  //~ } while (cnx_db == NULL);
-  //~ /*
-  //~ if (cnx_db == NULL){
-    //~ g_print("MySQL failure to connect to database...\n");
-    //~ g_print("Exit code: 2\n");
-    //~ g_print("Error: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    //~ exit(2);
-  //~ }
-  //~ */
-
-  //~ g_print("Database connected.\n");
-//~ }
-
-//~ void
-//~ db_close()
-//~ {
-  //~ mysql_close(cnx_init);
-  //~ g_print("MySQL disconnected.\n");
-//~ }
-
-//~ void
-//~ db_query(gchar *sql)
-//~ {
-  //~ db_init();
-  //~ db_connect();
-  //~ if (!mysql_set_character_set(cnx_init, "UTF8")){
-    //~ printf("New cslient character set: %s\n",
-           //~ mysql_character_set_name(cnx_init));
-  //~ }
-
-  //~ if (mysql_query(cnx_init, sql) != 0){
-    //~ g_print("Failure to insert to database.");
-    //~ g_print("Exit code: 3\n");
-    //~ g_print("ERror: %u -- %s\n", mysql_errno(cnx_init), mysql_error(cnx_init));
-    //~ g_print("%s\n", sql);
-    //~ LOG(ERROR, "Failure to insert to database. (3)");
-    //~ exit(3);
-  //~ }
-  //~ g_print("Insert data to mysql completed.\n");
-  //~ db_close();
-//~ }
-
 void setEntry()
 {
   g_print("setEntry()\n");
@@ -302,22 +234,37 @@ void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
-  gchar *sql;
-  sql = g_strconcat(
-          "UPDATE dts_depart SET ",
-          "dep_depart = 0 ", 
-          "WHERE ", 
-          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          "dep_std_code", " = '", depStdCode, "' AND ",
-          "date(dep_datetime) = '", curDate , "'; ",
-          NULL);
+  //gchar *sql;
+  //sql = g_strconcat(
+          //"UPDATE dts_depart SET ",
+          //"dep_depart = 0 ", 
+          //"WHERE ", 
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_std_code", " = '", depStdCode, "' AND ",
+          //"date(dep_datetime) = '", curDate , "'; ",
+          //NULL);
           
   //~ db_query(sql);
   //~ db_liststore();
+
+  gchar *url = "https://dts.bustecz.com/dts_api/busclear.php";
+  gchar *posData;
+  posData = g_strconcat(
+    "depBusno=",    depRoute  , "-", depBusNo, "&",
+    "depStdCode=",  depStdCode, "&",
+    "depDatetime=", curDate   ,
+    NULL
+  );
+  g_print("POST: %s\n", posData);
+  g_print("URL : %s\n", url);
+
+  if (execApi(url, posData) == 0){
+    g_print("Clear: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  }
+
+  db_liststore();
   btnNewClicked(NULL, NULL);
 
-  g_print("Clear depart status: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
-  g_print(sql);
 }
 
 G_MODULE_EXPORT
@@ -340,22 +287,38 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
-  gchar *sql;
-  sql = g_strconcat(
-          "UPDATE dts_depart SET ",
-          "dep_depart = 2 ", 
-          "WHERE ", 
-          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          "dep_std_code", " = '", depStdCode, "' AND ",
-          "date(dep_datetime) = '", curDate , "'; ",
-          NULL);
+
+  //gchar *sql;
+  //sql = g_strconcat(
+          //"UPDATE dts_depart SET ",
+          //"dep_depart = 2 ", 
+          //"WHERE ", 
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_std_code", " = '", depStdCode, "' AND ",
+          //"date(dep_datetime) = '", curDate , "'; ",
+          //NULL);
           
   //~ db_query(sql);
   //~ db_liststore();
+
+  gchar *url = "https://dts.bustecz.com/dts_api/busdepart.php";
+  gchar *posData;
+  posData = g_strconcat(
+    "depBusno=",    depRoute  , "-", depBusNo, "&",
+    "depStdCode=",  depStdCode, "&",
+    "depDatetime=", curDate   ,
+    NULL
+  );
+  g_print("%s\n", posData);
+  g_print(url);
+  
+  if (execApi(url, posData) == 0){
+    g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  }
+  
+  db_liststore();
   btnNewClicked(NULL, NULL);
 
-  g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
-  g_print(sql);
 }
 
 G_MODULE_EXPORT
@@ -378,22 +341,34 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
-  gchar *sql;
-  sql = g_strconcat(
-          "UPDATE dts_depart SET ",
-          "dep_depart = 1 ", 
-          "WHERE ", 
-          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          "dep_std_code", " = '", depStdCode, "' AND ",
-          "date(dep_datetime) = '", curDate , "'; ",
-          NULL);
-          
-  //~ db_query(sql);
-  //~ db_liststore();
-  btnNewClicked(NULL, NULL);
+  //gchar *sql;
+  //sql = g_strconcat(
+          //"UPDATE dts_depart SET ",
+          //"dep_depart = 1 ", 
+          //"WHERE ", 
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_std_code", " = '", depStdCode, "' AND ",
+          //"date(dep_datetime) = '", curDate , "'; ",
+          //NULL);
+  
+  gchar *url = "https://dts.bustecz.com/dts_api/busarrive.php";
+  gchar *posData;
+  posData = g_strconcat(
+    "depBusno=",    depRoute  , "-", depBusNo, "&",
+    "depStdCode=",  depStdCode, "&",
+    "depDatetime=", curDate   ,
+    NULL
+  );
+  g_print("%s\n", posData);
+  g_print(url);
 
-  g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
-  g_print(sql);
+  if (execApi(url, posData) == 0){
+    g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
+  }
+  
+  db_liststore();
+  btnNewClicked(NULL, NULL);
+  
 }
 
 G_MODULE_EXPORT
