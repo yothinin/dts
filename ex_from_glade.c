@@ -146,6 +146,7 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   mem->memory[mem->size] = 0;
 
   return realsize;
+
 }
 
 gchar 
