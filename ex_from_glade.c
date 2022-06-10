@@ -156,14 +156,14 @@ gchar
   GError *error;
   //gsize length;
   gchar *val;
-  
+
   key_file = g_key_file_new();
   error = NULL;
-    
+
   if(!g_key_file_load_from_file(key_file, file, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS, &error)){
     g_debug("%s", error->message);
   }else{
-    val = g_key_file_get_string(key_file, group, key, &error);    
+    val = g_key_file_get_string(key_file, group, key, &error);
   }
 
   return val;
@@ -230,20 +230,20 @@ void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
   entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
   const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
   const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
-  
+
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
   //gchar *sql;
   //sql = g_strconcat(
           //"UPDATE dts_depart SET ",
-          //"dep_depart = 0 ", 
-          //"WHERE ", 
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_depart = 0 ",
+          //"WHERE ",
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
           //"dep_std_code", " = '", depStdCode, "' AND ",
           //"date(dep_datetime) = '", curDate , "'; ",
           //NULL);
-          
+
   //~ db_query(sql);
   //~ db_liststore();
 
@@ -283,7 +283,7 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
   entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
   const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
   const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
-  
+
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
@@ -291,13 +291,13 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
   //gchar *sql;
   //sql = g_strconcat(
           //"UPDATE dts_depart SET ",
-          //"dep_depart = 2 ", 
-          //"WHERE ", 
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_depart = 2 ",
+          //"WHERE ",
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
           //"dep_std_code", " = '", depStdCode, "' AND ",
           //"date(dep_datetime) = '", curDate , "'; ",
           //NULL);
-          
+
   //~ db_query(sql);
   //~ db_liststore();
 
@@ -311,11 +311,11 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
   );
   g_print("%s\n", posData);
   g_print(url);
-  
+
   if (execApi(url, posData) == 0){
     g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
   }
-  
+
   db_liststore();
   btnNewClicked(NULL, NULL);
 
@@ -337,20 +337,20 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
   entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
   const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
   const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
-  
+
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
   //gchar *sql;
   //sql = g_strconcat(
           //"UPDATE dts_depart SET ",
-          //"dep_depart = 1 ", 
-          //"WHERE ", 
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
+          //"dep_depart = 1 ",
+          //"WHERE ",
+          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
           //"dep_std_code", " = '", depStdCode, "' AND ",
           //"date(dep_datetime) = '", curDate , "'; ",
           //NULL);
-  
+
   gchar *url = "https://dts.bustecz.com/dts_api/busarrive.php";
   gchar *posData;
   posData = g_strconcat(
@@ -365,10 +365,10 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
   if (execApi(url, posData) == 0){
     g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
   }
-  
+
   db_liststore();
   btnNewClicked(NULL, NULL);
-  
+
 }
 
 G_MODULE_EXPORT
@@ -505,7 +505,7 @@ treeviewSelected(GtkWidget *widget, gpointer view)
     gtk_widget_set_sensitive(btnDepart, TRUE);
     gtk_widget_set_sensitive(btnEmpty, TRUE);
     gtk_widget_set_sensitive(btnDelete, TRUE);
- 
+
     gtk_widget_grab_focus(entHour);
 
   }
@@ -545,7 +545,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   const gchar *depStandard = gtk_entry_get_text(GTK_ENTRY(entStandard));
   const gchar *depPlatform = gtk_entry_get_text(GTK_ENTRY(entPlatform));
   const gchar *depNote = gtk_entry_get_text(GTK_ENTRY(entNote));
-  
+
   if ( strcmp(depRoute, "") == 0 ||
        strcmp(depBusNo, "") == 0 ||
        strcmp(depHour, "") == 0 ||
@@ -554,7 +554,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   {
     btnNewClicked(NULL, NULL);
     g_print("\nNo data to save.\n\n");
-    return TRUE; 
+    return TRUE;
   }
 
   //gchar buf_sql[256];
@@ -594,11 +594,11 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
                     );
 
   g_print("url=%s\nposData=%s\n", url, postData);
-  
+
   if (execApi(url, postData) == 0)
     g_print("Status: completed.\n");
   ////g_print("Staus = %s\n", execJson("Status")";
-  
+
   g_free(postData);
 
   clearEntry();
@@ -614,7 +614,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
   gtk_button_set_label(GTK_BUTTON(button), "บันทึก");
   gtk_widget_grab_focus(cmbDest);
-  
+
   g_free(curTime);
   //~ g_free(sql);
 
@@ -640,7 +640,7 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
   entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
   const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
   const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
-  
+
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
@@ -667,12 +667,12 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
   if (execApi(url, posData) == 0){
     g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
   }
-  
+
   //~ db_query(sql);
   db_liststore();
   btnNewClicked(NULL, NULL);
 
-  //g_print(sql);  
+  //g_print(sql);
 }
 
 G_MODULE_EXPORT
@@ -734,7 +734,7 @@ void btnNewClicked(GtkWidget *widget, gpointer user_data)
   setEntry();
   clearSelected();
   clearEntry();
-  
+
   entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
   btnArrive = GTK_WIDGET(gtk_builder_get_object(builder, "btnArrive"));
   btnDepart = GTK_WIDGET(gtk_builder_get_object(builder, "btnDepart"));
@@ -743,14 +743,14 @@ void btnNewClicked(GtkWidget *widget, gpointer user_data)
 
   cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
   cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
-  
+
   gtk_widget_set_sensitive(entRoute, TRUE);
   gtk_widget_set_sensitive(entBusNo, TRUE);
   gtk_widget_set_sensitive(entDest, TRUE);
   gtk_widget_set_sensitive(entStandard, TRUE);
   gtk_widget_set_sensitive(cmbDest, TRUE);
   gtk_widget_set_sensitive(cmbStandard, TRUE);
-  
+
   gtk_widget_set_sensitive(btnArrive, FALSE);
   gtk_widget_set_sensitive(btnDepart, FALSE);
   gtk_widget_set_sensitive(btnEmpty, FALSE);
@@ -794,7 +794,7 @@ int execApi(char *url, char *postData)
     res = curl_easy_perform(curl);
     g_printf("%s\n", chunk.memory);
   }
-  
+
   return res;
 }
 
@@ -814,7 +814,7 @@ db_liststore()
   char *postData = "";
 
   // call execApi() function and return res.
-  if (execApi(url, postData) == CURLE_OK){ 
+  if (execApi(url, postData) == CURLE_OK){
     json_object *root = json_tokener_parse(chunk.memory);
     int i;
     int n = json_object_array_length(root);
@@ -830,15 +830,15 @@ db_liststore()
       json_object_object_get_ex(sch, "dep_standard", &objStandard);
       json_object_object_get_ex(sch, "dep_platform", &objPlatform);
       json_object_object_get_ex(sch, "dep_depart", &objDepart);
-      
+
       gtk_list_store_append(store, &iter1);
-      gtk_list_store_set(store, &iter1, 
+      gtk_list_store_set(store, &iter1,
         0, json_object_get_string(objBusno),
         1, json_object_get_string(objStandard),
         2, json_object_get_string(objDest),
         3, json_object_get_string(objTime),
         4, json_object_get_string(objPlatform),
-        5, json_object_get_string(objDepart), 
+        5, json_object_get_string(objDepart),
         -1
       );
 
@@ -862,7 +862,7 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
     gtk_widget_grab_focus(GTK_WIDGET(user_data));
     return TRUE;
   }
-  
+
   return FALSE;
 }
 
@@ -879,7 +879,7 @@ int main(int argc, char *argv[])
   g_print("Home: %s\n", home);
   g_chdir(home);
 
-  icon = create_pixbuf("Digital-Signage.png");
+  icon = create_pixbuf("time-mgr.png");
 
   gtk_init(&argc, &argv);
 
@@ -900,7 +900,7 @@ int main(int argc, char *argv[])
   window = (GtkWidget*)gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
   gtk_window_set_icon(GTK_WINDOW(window), icon);
-  //gtk_window_maximize(GTK_WINDOW(window));
+  gtk_window_maximize(GTK_WINDOW(window));
   //gtk_window_fullscreen(GTK_WINDOW(window));
   db_liststore();
 
@@ -931,7 +931,7 @@ int main(int argc, char *argv[])
   g_object_bind_property (cmbStandard, "active-id",
                           entStandard, "text",
                           G_BINDING_BIDIRECTIONAL);
-                          
+
   treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
   //g_signal_connect(treeview, "button-press-event", G_CALLBACK(treeviewEvent), NULL);
   //g_signal_connect(treeview, "row-activated", G_CALLBACK(onTreeViewRowActivated), NULL);
