@@ -501,6 +501,7 @@
                         <property name="model">listStandard</property>
                         <property name="wrap-width">1</property>
                         <property name="id-column">1</property>
+                        <signal name="changed" handler="std_buscheck" swapped="no"/>
                         <signal name="changed" handler="std_change" swapped="no"/>
                         <signal name="key-press-event" handler="onKeyPress" object="entHour" swapped="no"/>
                         <child>

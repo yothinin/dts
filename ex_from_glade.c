@@ -202,12 +202,16 @@ void clearEntry()
 void clearSelected()
 {
   g_print("clearSelected()\n");
+  GtkWidget *entRoute = GTK_WIDGET(gtk_builder_get_object(builder, "entRoute"));
+  GtkWidget *entBusNo = GTK_WIDGET(gtk_builder_get_object(builder, "entBusNo"));
   GtkWidget *cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
   GtkWidget *cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   gtk_tree_selection_unselect_all(selection);
 
+  gtk_entry_set_text(GTK_ENTRY(entRoute), "");
+  gtk_entry_set_text(GTK_ENTRY(entBusNo), "");
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbDest), 0);
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbStandard), 0);
 
@@ -720,6 +724,84 @@ gboolean std_change(GtkWidget *widget, gpointer user_data)
 
   g_print("Standard selected.\n");
   return TRUE;
+}
+
+G_MODULE_EXPORT
+void std_buscheck(GtkWidget *widget, gpointer userdata)
+{
+  g_print("FUNCTION: chk_change()\n");
+  GtkTreeIter iter;
+  GtkListStore *store;
+  gchar *depStdCode;
+  GtkComboBox *cmbStandard = GTK_COMBO_BOX(GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard")));
+  gtk_combo_box_get_active_iter(cmbStandard, &iter);
+  store = GTK_LIST_STORE(gtk_combo_box_get_model(cmbStandard));
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 0, &depStdCode, -1);
+
+  entRoute = (GtkWidget*)gtk_builder_get_object(builder, "entRoute");
+  entBusNo = (GtkWidget*)gtk_builder_get_object(builder, "entBusNo");
+  const gchar *depRoute = gtk_entry_get_text(GTK_ENTRY(entRoute));
+  const gchar *depBusNo = gtk_entry_get_text(GTK_ENTRY(entBusNo));
+
+  GDateTime *now = g_date_time_new_now_local();
+  gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
+  gchar *url = "https://dts.bustecz.com/dts_api/getbus.php";
+  gchar *posData;
+  posData = g_strconcat(
+    "depBusno=",    depRoute  , "-", depBusNo, "&",
+    "depStdCode=",  depStdCode, "&",
+    "depDatetime=", curDate   ,
+    NULL
+  );
+
+  g_print("%s\n", url);
+  if ( strcmp(depRoute, "") == 0 ||
+       strcmp(depBusNo, "") == 0 ||
+       strcmp(depStdCode, "") == 0)
+    g_print("No bus to check.\n");
+  else
+    g_print("%s\n", posData);
+
+
+  if (execApi(url, posData) == 0){
+    //g_print("Data: %s\n", chunk.memory);
+  
+    json_object *root = json_tokener_parse(chunk.memory);
+    int i;
+    int n = json_object_array_length(root);
+    for (i = 0; i<n; i++){
+      const char *str = json_object_get_string(json_object_array_get_idx(root, i));
+      g_print("String: %s\n", str);
+      json_object *sch = json_tokener_parse(str);
+      json_object *objTime, *objPlatform, *objNote;
+
+      json_object_object_get_ex(sch, "dep_time", &objTime);
+      json_object_object_get_ex(sch, "dep_platform", &objPlatform);
+      json_object_object_get_ex(sch, "dep_note", &objNote);
+
+      gchar **tt;
+      tt = g_strsplit(json_object_get_string(objTime), ":", 0);
+
+      g_print("Time: %s-%s, Plaform: %s, Note: %s\n", tt[0], tt[1],
+                                                   json_object_get_string(objPlatform),
+                                                   json_object_get_string(objNote));
+
+      gtk_entry_set_text(GTK_ENTRY(entHour), tt[0]);
+      gtk_entry_set_text(GTK_ENTRY(entMinute), tt[1]);
+      gtk_entry_set_text(GTK_ENTRY(entPlatform), json_object_get_string(objPlatform));
+      gtk_entry_set_text(GTK_ENTRY(entPlatform), json_object_get_string(objNote));
+
+      g_strfreev (tt);
+
+      json_object_put(objTime);
+      json_object_put(objPlatform);
+      json_object_put(objNote);
+    }
+  }
+
+  //db_liststore();
+  //btnNewClicked(NULL, NULL);
+
 }
 
 void depart_selected(GtkWidget *widget, gpointer user_data)
