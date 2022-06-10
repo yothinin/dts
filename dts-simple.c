@@ -152,15 +152,25 @@ displayLabel (GtkWidget *widget)
 
         //g_print("Status = %s\n", depStatus);
 
+        gchar *DYNAMIC_COLOR;
+        if (strcmp(depDepart, "1") == 0)
+          DYNAMIC_COLOR = "#ffff00";
+        else if (strcmp(depDepart, "2") == 0)
+          DYNAMIC_COLOR = "#ff0000";
+        else if (strcmp(depDepart, "0") == 0)
+          DYNAMIC_COLOR = CONTENT_COLOR;
+
         hbox_c = gtk_hbox_new(FALSE, 5);
         gtk_box_pack_start(GTK_BOX(widget), hbox_c, FALSE, FALSE, 0);
-        set_label(hbox_c, lbl, 5 , json_object_get_string(objTime), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-        set_label(hbox_c, lbl, 10, json_object_get_string(objDest), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-        set_label(hbox_c, lbl, 7 , json_object_get_string(objBusno), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-        set_label(hbox_c, lbl, 8 , json_object_get_string(objStandard), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-        set_label(hbox_c, lbl, 7 , json_object_get_string(objPlatform), FONT_SIZE, CONTENT_COLOR, FALSE, FALSE);
-        set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, (strcmp(depDepart, "0") == 0)?CONTENT_COLOR:((strcmp(depDepart,"1") == 0)?"#ffff00":"#ff0000"), FALSE, FALSE);
+        set_label(hbox_c, lbl, 5 , json_object_get_string(objTime), FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 10, json_object_get_string(objDest), FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 7 , json_object_get_string(objBusno), FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 8 , json_object_get_string(objStandard), FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 7 , json_object_get_string(objPlatform), FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, DYNAMIC_COLOR, FALSE, FALSE);
+        //set_label(hbox_c, lbl, 15, depStatus, FONT_SIZE, (strcmp(depDepart, "0") == 0)?CONTENT_COLOR:((strcmp(depDepart,"1") == 0)?"#ffff00":"#ff0000"), FALSE, FALSE);
         //g_printf("%s\t%s\t%s\t%s\n", depTime, depDest, depBusno, depStandard);
+
         
         json_object_put(sch);
         
