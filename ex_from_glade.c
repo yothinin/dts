@@ -5,7 +5,6 @@
 // signal handler at runtime. See the Makefile for implementation.
 #include <stdio.h>
 #include <gtk/gtk.h>
-//~ #include <mysql.h>
 #include <stdlib.h>
 #include <string.h>
 #include <glib.h>
@@ -14,11 +13,6 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 #include "dts.h"
-
-//~ FILE *fp;
-//~ #define LOG(X, Y) fprintf (fp, #X ": Time:%s, File:%s(%d) " #Y  "\n", __TIMESTAMP__, __FILE__, __LINE__)
-
-//#include "ex_from_glade-res.c"
 
 GtkBuilder* builder;
 GtkWidget *window;
@@ -37,15 +31,9 @@ GtkWidget *btnArrive;
 GtkWidget *btnEmpty;
 GtkWidget *btnDelete;
 
-gint dts_mode = 0; // 0 = Insert, 1 = Update
+gint dts_mode = 0; /* 0 = Insert, 1 = Update, 2 = NONE for liststore. */
+gint handler_select;
 gchar *SERVER;
-
-//~ gchar *sql;
-
-//~ MYSQL *cnx_init;
-//~ MYSQL *cnx_db;
-//~ MYSQL_RES *result_set;
-//~ MYSQL_ROW row;
 
 typedef struct
 {
@@ -87,7 +75,7 @@ enum
 };
 
 static Standard std[] =
-{
+{                                                            
   {" ", " "},
   {"11", "ม.1ก"},
   {"12", "ม.1ข"},
@@ -221,7 +209,6 @@ void clearSelected()
 G_MODULE_EXPORT
 void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
 {
- //g_print("btnDepart_cliecked_cb()\n");
   GtkTreeIter iter;
   GtkListStore *store;
   gchar *depStdCode;
@@ -237,20 +224,6 @@ void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
 
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
-
-  //gchar *sql;
-  //sql = g_strconcat(
-          //"UPDATE dts_depart SET ",
-          //"dep_depart = 0 ",
-          //"WHERE ",
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
-          //"dep_std_code", " = '", depStdCode, "' AND ",
-          //"date(dep_datetime) = '", curDate , "'; ",
-          //NULL);
-
-  //~ db_query(sql);
-  //~ db_liststore();
-
   gchar *url = "https://dts.bustecz.com/dts_api/busclear.php";
   gchar *posData;
   posData = g_strconcat(
@@ -259,8 +232,8 @@ void btnEmpty_clicked_cb(GtkWidget *widget, gpointer userdata)
     "depDatetime=", curDate   ,
     NULL
   );
-  g_print("POST: %s\n", posData);
-  g_print("URL : %s\n", url);
+  ///g_print("POST: %s\n", posData);
+  ///g_print("URL : %s\n", url);
 
   if (execApi(url, posData) == 0){
     g_print("Clear: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -290,21 +263,6 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
 
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
-
-
-  //gchar *sql;
-  //sql = g_strconcat(
-          //"UPDATE dts_depart SET ",
-          //"dep_depart = 2 ",
-          //"WHERE ",
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
-          //"dep_std_code", " = '", depStdCode, "' AND ",
-          //"date(dep_datetime) = '", curDate , "'; ",
-          //NULL);
-
-  //~ db_query(sql);
-  //~ db_liststore();
-
   gchar *url = "https://dts.bustecz.com/dts_api/busdepart.php";
   gchar *posData;
   posData = g_strconcat(
@@ -313,8 +271,9 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
     "depDatetime=", curDate   ,
     NULL
   );
-  g_print("%s\n", posData);
-  g_print(url);
+  
+  //g_print("%s\n", posData);
+  //g_print(url);
 
   if (execApi(url, posData) == 0){
     g_print("Depart: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -329,6 +288,11 @@ G_MODULE_EXPORT
 void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
 {
   //g_print("btnArrive_clicked_cb()\n");
+
+  GtkTreeView *treeview = GTK_TREE_VIEW(gtk_builder_get_object(builder, "treeview1"));
+  selection = gtk_tree_view_get_selection(treeview);
+  gtk_tree_selection_unselect_all(selection);
+  
   GtkTreeIter iter;
   GtkListStore *store;
   gchar *depStdCode;
@@ -345,16 +309,6 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
 
-  //gchar *sql;
-  //sql = g_strconcat(
-          //"UPDATE dts_depart SET ",
-          //"dep_depart = 1 ",
-          //"WHERE ",
-          //"dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ",
-          //"dep_std_code", " = '", depStdCode, "' AND ",
-          //"date(dep_datetime) = '", curDate , "'; ",
-          //NULL);
-
   gchar *url = "https://dts.bustecz.com/dts_api/busarrive.php";
   gchar *posData;
   posData = g_strconcat(
@@ -363,8 +317,8 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
     "depDatetime=", curDate   ,
     NULL
   );
-  g_print("%s\n", posData);
-  g_print(url);
+  ///g_print("%s\n", posData);
+  ///g_print(url);
 
   if (execApi(url, posData) == 0){
     g_print("Arrive: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
@@ -377,78 +331,28 @@ void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
 
 G_MODULE_EXPORT
 void
-onTreeViewRowActivated (GtkTreeView *view,
-                        GtkTreePath *path,
-                        GtkTreeViewColumn *col,
-                        gpointer userdata)
+TreeViewSelect(GtkWidget *widget, gpointer view)
 {
-  // Double-clicked on GtkTreeView //
-  // ปล่อยรถ //
-  GtkTreeModel *model;
-  GtkTreeIter iter;
-
-  gchar *time = 0L;
-  gchar *busno = 0L;
-  gchar *dest = 0L;
-  gchar msg[256];
-
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
-
-  //if (gtk_tree_selection_get_selected(GTK_TREE_SELECTION(user_data), &model, &iter)){
-  if (gtk_tree_selection_get_selected(selection, &model, &iter)){
-    gtk_tree_model_get(model, &iter, 0, &busno, -1);
-    gtk_tree_model_get(model, &iter, 2, &dest, -1);
-    gtk_tree_model_get(model, &iter, 3, &time, -1);
-    g_print ("คลิกเที่ยวรถ: %s\n", time);
-  }
-
-  if (time != 0L){
-    GtkWidget *dialog;
-
-    g_sprintf(msg, "กรุณายืนยันปล่อยรถเที่ยวเวลา: %s\n\t\tปลายทาง: %s\n\t\tหมายเลขรถ: %s", time, dest, busno);
-
-    dialog = gtk_message_dialog_new (GTK_WINDOW (window),
-                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                     GTK_MESSAGE_INFO,
-                                     GTK_BUTTONS_OK_CANCEL,
-                                     msg);
-    //gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-    //                                          "%d", i);
-    gtk_window_set_title((GtkWindow *)dialog, "ยืนยันปล่อยรถ");
-    int response = gtk_dialog_run (GTK_DIALOG (dialog));
-    g_print("response was %d (OK=%d, CANCEL = %d)\n", response, GTK_RESPONSE_OK, GTK_RESPONSE_CANCEL);
-
-    if (response == GTK_RESPONSE_OK){
-      gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
-    }
-
-    gtk_widget_destroy (dialog);
-  }
-  g_free(time);
-  g_free(dest);
-  g_free(busno);
+  g_print("Treeview select...\n");
 }
 
 void
 treeviewSelected(GtkWidget *widget, gpointer view)
 {
-  g_print("treeviewSelect: clicked...\n");
+  g_print("treeviewSelected: clicked...\n");
+  //g_print("signal: row-activated\n");
+  //g_print ("The row containing the time is '%s' has been clicked.\n", time);
+
   GtkTreeModel *model = gtk_tree_view_get_model(view);
   GtkTreeIter iter;
 
   GtkTreePath *path;
   //path = gtk_tree_model_get_path(model, &iter);
   gtk_tree_view_get_cursor(view, &path, NULL);
-  g_print("signal: row-activated\n");
 
   if (gtk_tree_model_get_iter(model, &iter, path)){
-    gchar *time;
-    gchar *dest;
-    gchar *busno;
-    gchar *standard;
-    gchar *platform;
-    gchar *status;
-    gchar *note;
+    gchar *time, *dest, *busno, *standard;
+    gchar *platform, *status, *note;
 
     gtk_tree_model_get(model, &iter,
       COL_BUSNO, &busno, COL_DEST, &dest, COL_STANDARD, &standard, COL_TIME, &time, COL_PLATFORM, &platform, COL_STATUS, &status, COL_NOTE, &note,
@@ -489,7 +393,6 @@ treeviewSelected(GtkWidget *widget, gpointer view)
 
     dts_mode = 1;
 
-    g_print ("The row containing the time is '%s' has been clicked.\n", time);
     g_free(busno);
     g_free(dest);
     g_free(standard);
@@ -561,29 +464,11 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
     return TRUE;
   }
 
-  //gchar buf_sql[256];
   gchar *url;
-  if (dts_mode == 0){
+  if (dts_mode == 0)
     url = "https://dts.bustecz.com/dts_api/addsch.php";
-    /*
-    GtkListStore *liststore = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
-    GtkTreeIter iter;
-
-    gchar *depTime = g_strconcat(depHour, ":", depMinute, NULL);
-    gchar *depBus = g_strconcat(depRoute, "-", depBusNo, NULL);
-
-    gtk_list_store_append(liststore, &iter);
-    gtk_list_store_set(
-      liststore, &iter, COL_BUSNO, depBus, COL_DEST, depDest, COL_STANDARD, depStandard, COL_TIME, depTime, COL_PLATFORM, depPlatform, COL_NOTE, depNote, -1
-    );
-
-    g_free(depTime);
-    g_free(depBus);
-    */
-
-  }else{
+  else
     url = "https://dts.bustecz.com/dts_api/updsch.php";
-  }
 
   gchar *postData = g_strconcat(
                       "depTime=",     depHour,     ":", depMinute, "&",
@@ -601,7 +486,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 
   if (execApi(url, postData) == 0)
     g_print("Status: completed.\n");
-  ////g_print("Staus = %s\n", execJson("Status")";
+    ////g_print("Staus = %s\n", execJson("Status")";
 
   g_free(postData);
 
@@ -610,9 +495,6 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   GtkWidget *cmbDest;
   cmbDest = GTK_WIDGET(gtk_builder_get_object(builder, "cmbDest"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbDest), 0);
-
-  //GtkWidget *cmbStandard;
-  //cmbStandard = GTK_WIDGET(gtk_builder_get_object(builder, "cmbStandard"));
   gtk_combo_box_set_active(GTK_COMBO_BOX(cmbStandard), 0);
 
   GtkWidget *button = GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"));
@@ -620,7 +502,6 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   gtk_widget_grab_focus(cmbDest);
 
   g_free(curTime);
-  //~ g_free(sql);
 
   db_liststore();
   btnNewClicked(NULL, NULL);
@@ -647,17 +528,6 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
 
   GDateTime *now = g_date_time_new_now_local();
   gchar *curDate = g_date_time_format(now, "%Y-%m-%d");
-
-  /*
-  gchar *sql;
-  sql = g_strconcat(
-          "DELETE FROM dts_depart ",
-          "WHERE ",
-          "dep_busno"   , " = '", depRoute  , "-"     , depBusNo, "' AND ", 
-          "dep_std_code", " = '", depStdCode, "' AND ",
-          "date(dep_datetime) = '", curDate , "'; ",
-          NULL);
-  */
   gchar *url = "https://dts.bustecz.com/dts_api/delsch.php";
   gchar *posData;
   posData = g_strconcat(
@@ -666,17 +536,14 @@ void btnDelete_clicked_cb(GtkWidget *widget, gpointer user_data)
     "depDatetime=", curDate   ,
     NULL
   );
+
   g_print("%s\n", posData);
 
-  if (execApi(url, posData) == 0){
+  if (execApi(url, posData) == 0)
     g_print("Deleted: %s, %s-%s, %s\n", curDate, depRoute, depBusNo, depStdCode);
-  }
 
-  //~ db_query(sql);
   db_liststore();
   btnNewClicked(NULL, NULL);
-
-  //g_print(sql);
 }
 
 G_MODULE_EXPORT
@@ -754,59 +621,58 @@ void std_buscheck(GtkWidget *widget, gpointer userdata)
     NULL
   );
 
-  g_print("%s\n", url);
   if ( strcmp(depRoute, "") == 0 ||
        strcmp(depBusNo, "") == 0 ||
        strcmp(depStdCode, "") == 0)
     g_print("No bus to check.\n");
-  else
-    g_print("%s\n", posData);
+  else{
+    g_print("std_buscheck: %s\n", posData);
+    g_print("url: %s\n", url);
+    if (execApi(url, posData) == 0){
+      //g_print("Data: %s\n", chunk.memory);
+      /* Set mode to edit and change btnSave label to edit. */
 
+      json_object *root = json_tokener_parse(chunk.memory);
+      int i;
+      int n = json_object_array_length(root);
+      
+      if (n == 0)
+        dts_mode = 0;
+      else
+        dts_mode = 1;
 
-  if (execApi(url, posData) == 0){
-    //g_print("Data: %s\n", chunk.memory);
-  
-    json_object *root = json_tokener_parse(chunk.memory);
-    int i;
-    int n = json_object_array_length(root);
-    for (i = 0; i<n; i++){
-      const char *str = json_object_get_string(json_object_array_get_idx(root, i));
-      g_print("String: %s\n", str);
-      json_object *sch = json_tokener_parse(str);
-      json_object *objTime, *objPlatform, *objNote;
+      gtk_button_set_label(GTK_BUTTON(GTK_WIDGET(gtk_builder_get_object(builder, "btnSave"))), (dts_mode == 0)?"บันทึก":"แก้ไข");
+      
+      for (i = 0; i<n; i++){
+        const char *str = json_object_get_string(json_object_array_get_idx(root, i));
+        g_print("String: %s\n", str);
+        json_object *sch = json_tokener_parse(str);
+        json_object *objTime, *objPlatform, *objNote;
 
-      json_object_object_get_ex(sch, "dep_time", &objTime);
-      json_object_object_get_ex(sch, "dep_platform", &objPlatform);
-      json_object_object_get_ex(sch, "dep_note", &objNote);
+        json_object_object_get_ex(sch, "dep_time", &objTime);
+        json_object_object_get_ex(sch, "dep_platform", &objPlatform);
+        json_object_object_get_ex(sch, "dep_note", &objNote);
 
-      gchar **tt;
-      tt = g_strsplit(json_object_get_string(objTime), ":", 0);
+        gchar **tt;
+        tt = g_strsplit(json_object_get_string(objTime), ":", 0);
 
-      g_print("Time: %s-%s, Plaform: %s, Note: %s\n", tt[0], tt[1],
+        g_print("Time: %s-%s, Plaform: %s, Note: %s\n", tt[0], tt[1],
                                                    json_object_get_string(objPlatform),
                                                    json_object_get_string(objNote));
 
-      gtk_entry_set_text(GTK_ENTRY(entHour), tt[0]);
-      gtk_entry_set_text(GTK_ENTRY(entMinute), tt[1]);
-      gtk_entry_set_text(GTK_ENTRY(entPlatform), json_object_get_string(objPlatform));
-      gtk_entry_set_text(GTK_ENTRY(entPlatform), json_object_get_string(objNote));
+        gtk_entry_set_text(GTK_ENTRY(entHour), tt[0]);
+        gtk_entry_set_text(GTK_ENTRY(entMinute), tt[1]);
+        gtk_entry_set_text(GTK_ENTRY(entPlatform), json_object_get_string(objPlatform));
+        gtk_entry_set_text(GTK_ENTRY(entNote), json_object_get_string(objNote));
 
-      g_strfreev (tt);
+        g_strfreev (tt);
 
-      json_object_put(objTime);
-      json_object_put(objPlatform);
-      json_object_put(objNote);
+        json_object_put(objTime);
+        json_object_put(objPlatform);
+        json_object_put(objNote);
+      }
     }
   }
-
-  //db_liststore();
-  //btnNewClicked(NULL, NULL);
-
-}
-
-void depart_selected(GtkWidget *widget, gpointer user_data)
-{
-  g_print("ยืนยันปล่อยรถเที่ยวเวลา: %s\n", (gchar*)user_data);
 }
 
 G_MODULE_EXPORT
@@ -859,7 +725,7 @@ int execApi(char *url, char *postData)
   CURL *curl;
   CURLcode res;
 
-//  struct MemoryStruct chunk;
+  //struct MemoryStruct chunk;
   chunk.memory = malloc(1);
   chunk.size = 0;
 
@@ -883,10 +749,19 @@ int execApi(char *url, char *postData)
 void
 db_liststore()
 {
+  dts_mode = 2;
   GtkListStore *store;
   GtkTreeIter iter1;
   store = GTK_LIST_STORE(gtk_builder_get_object(builder, "liststore1"));
+
+  GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "treeview1"));
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  
+  if (handler_select > 0)
+    g_signal_handler_disconnect(selection, handler_select);
+  
   gtk_list_store_clear(store);
+  handler_select = g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
 
   GtkTreeSortable *sortable;
   sortable = GTK_TREE_SORTABLE(store);
@@ -895,7 +770,7 @@ db_liststore()
   char *url = "https://dts.bustecz.com/dts_api/getsch-all.php";
   char *postData = "";
 
-  // call execApi() function and return res.
+  /* call execApi() function and return res. */
   if (execApi(url, postData) == CURLE_OK){
     json_object *root = json_tokener_parse(chunk.memory);
     int i;
@@ -904,7 +779,7 @@ db_liststore()
       const char *str = json_object_get_string(json_object_array_get_idx(root, i));
       g_print(str);
       json_object *sch = json_tokener_parse(str);
-      json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart;
+      json_object *objTime, *objDest, *objBusno, *objStandard, *objPlatform, *objDepart, *objNote;
 
       json_object_object_get_ex(sch, "dep_time", &objTime);
       json_object_object_get_ex(sch, "dep_dest", &objDest);
@@ -912,6 +787,7 @@ db_liststore()
       json_object_object_get_ex(sch, "dep_standard", &objStandard);
       json_object_object_get_ex(sch, "dep_platform", &objPlatform);
       json_object_object_get_ex(sch, "dep_depart", &objDepart);
+      json_object_object_get_ex(sch, "dep_note", &objNote);
 
       gtk_list_store_append(store, &iter1);
       gtk_list_store_set(store, &iter1,
@@ -921,6 +797,7 @@ db_liststore()
         3, json_object_get_string(objTime),
         4, json_object_get_string(objPlatform),
         5, json_object_get_string(objDepart),
+        6, json_object_get_string(objNote),
         -1
       );
 
@@ -930,6 +807,7 @@ db_liststore()
       json_object_put(objStandard);
       json_object_put(objPlatform);
       json_object_put(objDepart);
+      json_object_put(objNote);
 
     }
     json_object_put(root);
@@ -952,7 +830,6 @@ gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
 int main(int argc, char *argv[])
 {
   GdkPixbuf *icon;
-  GSList *lst, *objList;
   GtkListStore *store_std, *store_dest;
   GtkTreeIter iter2, iter3;
 
@@ -972,12 +849,12 @@ int main(int argc, char *argv[])
   //builder = gtk_builder_new_from_resource("/com/bustecz/dts/ex_from_glade.xml");
   gtk_builder_connect_signals(builder, NULL);
 
-  objList = gtk_builder_get_objects(builder);
-
-  g_print("%p\n", objList);
-  for (lst = objList; lst != NULL; lst = lst->next){
-    g_print("%p\n", (char*)(lst->data));
-  }
+  //GSList *lst, *objList;
+  //objList = gtk_builder_get_objects(builder);
+  //g_print("%p\n", objList);
+  //for (lst = objList; lst != NULL; lst = lst->next){
+    //g_print("%p\n", (char*)(lst->data));
+  //}
 
   window = (GtkWidget*)gtk_builder_get_object(builder, "window");
   gtk_window_set_position(GTK_WINDOW(window), GTK_WINDOW_TOPLEVEL);
@@ -1018,17 +895,13 @@ int main(int argc, char *argv[])
   //g_signal_connect(treeview, "button-press-event", G_CALLBACK(treeviewEvent), NULL);
   //g_signal_connect(treeview, "row-activated", G_CALLBACK(onTreeViewRowActivated), NULL);
 
-  /*
-  g_signal_connect(selection, "changed",
-          G_CALLBACK(treeviewSelected), selection);
-  */
-
   gtk_widget_show_all(GTK_WIDGET(window));
 
-  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-  gtk_tree_selection_unselect_all(selection);
+  ///selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+  ///gtk_tree_selection_unselect_all(selection);
 
-  g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
+  /* Change to set g_signal_connect to db_liststore() */
+  // handler_select = g_signal_connect(selection, "changed", G_CALLBACK(treeviewSelected), treeview);
   gtk_main();
 
   return 0;
