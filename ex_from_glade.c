@@ -285,6 +285,13 @@ void btnDepart_clicked_cb(GtkWidget *widget, gpointer userdata)
 }
 
 G_MODULE_EXPORT
+void btnRefresh_clicked_cb (GtkWidget *widget, gpointer user_data)
+{
+  g_print("btnRefresh_clicked_cb::clicked\n");
+  db_liststore();
+}
+
+G_MODULE_EXPORT
 void btnArrive_clicked_cb(GtkWidget *widget, gpointer userdata)
 {
   //g_print("btnArrive_clicked_cb()\n");
