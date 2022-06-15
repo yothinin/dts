@@ -101,6 +101,7 @@ static Destination dest[] =
   {"910", "น่าน"},
   {"922", "พะเยา"},
   {"923", "แพร่"},
+  {"924", "ลำพูน"},
   {"928", "มุกดาหาร"},
   {"933", "ศรีเชียงใหม่"},
   {"940", "ศรีสะเกษ"},
@@ -514,6 +515,12 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
   btnNewClicked(NULL, NULL);
 
   return TRUE;
+}
+
+G_MODULE_EXPORT
+void btnDownload_clicked_cb(GtkWidget *widget, gpointer user_data)
+{
+  g_print("Download data from Ticket Server.\n");
 }
 
 G_MODULE_EXPORT
