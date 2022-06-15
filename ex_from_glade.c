@@ -520,9 +520,7 @@ gboolean btnSaveClicked(GtkWidget *widget, gpointer user_data)
 G_MODULE_EXPORT
 void btnDownload_clicked_cb(GtkWidget *widget, gpointer user_data)
 {
-
   g_print("Download data from Ticket Server.\n");
-
 }
 
 G_MODULE_EXPORT
