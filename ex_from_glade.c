@@ -829,9 +829,14 @@ db_liststore()
 }
 
 G_MODULE_EXPORT
-gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data){
+gboolean onKeyPress(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
 
-  if (strcmp(gdk_keyval_name(event->keyval), "Return") == 0){
+  //g_print("Key: %s\n", gdk_keyval_name(event->keyval));
+
+  if (strcmp(gdk_keyval_name(event->keyval), "Return") == 0  ||
+      strcmp(gdk_keyval_name(event->keyval), "KP_Enter") == 0)
+  {
     g_print("press enter key.\n");
     gtk_widget_grab_focus(GTK_WIDGET(user_data));
     return TRUE;
